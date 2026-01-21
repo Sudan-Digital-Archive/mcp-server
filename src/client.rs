@@ -27,38 +27,39 @@ impl SdaClient {
         args: ListAccessionsArgs,
     ) -> Result<Vec<(&'static str, String)>> {
         let mut query = vec![];
-        if let Some(p) = args.page {
-            query.push(("page", p.to_string()));
+        if args.page != -1 {
+            query.push(("page", args.page.to_string()));
         }
-        if let Some(pp) = args.per_page {
-            query.push(("per_page", pp.to_string()));
+        if args.per_page != -1 {
+            query.push(("per_page", args.per_page.to_string()));
         }
-        if let Some(l) = args.lang {
-            let lang_str = match l {
-                MetadataLanguage::English => "english",
-                MetadataLanguage::Arabic => "arabic",
-            };
-            query.push(("lang", lang_str.to_string()));
+        match args.lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
         }
-        if let Some(ms) = args.metadata_subjects {
-            for s in ms {
+        if !args.metadata_subjects.is_empty() {
+            for s in args.metadata_subjects {
                 query.push(("metadata_subjects", s.to_string()));
             }
         }
-        if let Some(msif) = args.metadata_subjects_inclusive_filter {
-            query.push(("metadata_subjects_inclusive_filter", msif.to_string()));
+        if args.metadata_subjects_inclusive_filter {
+            query.push(("metadata_subjects_inclusive_filter", "true".to_string()));
         }
-        if let Some(qt) = args.query_term {
-            query.push(("query_term", qt));
+        if !args.query_term.is_empty() {
+            query.push(("query_term", args.query_term));
         }
-        if let Some(uf) = args.url_filter {
-            query.push(("url_filter", uf));
+        if !args.url_filter.is_empty() {
+            query.push(("url_filter", args.url_filter));
         }
-        if let Some(df) = args.date_from {
-            query.push(("date_from", df));
+        if !args.date_from.is_empty() {
+            query.push(("date_from", args.date_from));
         }
-        if let Some(dt) = args.date_to {
-            query.push(("date_to", dt));
+        if !args.date_to.is_empty() {
+            query.push(("date_to", args.date_to));
+        }
+        if args.is_private {
+            query.push(("is_private", "true".to_string()));
         }
         Ok(query)
     }

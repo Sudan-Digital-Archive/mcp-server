@@ -1,9 +1,11 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, JsonSchema, Clone)]
+#[derive(Debug, Serialize, Deserialize, JsonSchema, Clone, Default, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum MetadataLanguage {
+    #[default]
+    None,
     English,
     Arabic,
 }
@@ -14,25 +16,71 @@ pub enum DublinMetadataFormat {
     Wacz,
 }
 
+fn default_pagination() -> i64 {
+    -1
+}
+
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ListAccessionsArgs {
-    pub page: Option<i64>,
-    #[serde(alias = "per_page")]
-    pub per_page: Option<i64>,
-    pub lang: Option<MetadataLanguage>,
-    pub metadata_subjects: Option<Vec<i32>>,
-    pub metadata_subjects_inclusive_filter: Option<bool>,
-    pub query_term: Option<String>,
-    pub url_filter: Option<String>,
-    pub date_from: Option<String>,
-    pub date_to: Option<String>,
+    #[serde(default = "default_pagination")]
+    pub page: i64,
+    #[serde(default = "default_pagination", alias = "per_page")]
+    pub per_page: i64,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+    #[serde(default)]
+    pub metadata_subjects: Vec<i32>,
+    #[serde(default)]
+    pub metadata_subjects_inclusive_filter: bool,
+    #[serde(default)]
+    pub query_term: String,
+    #[serde(default)]
+    pub url_filter: String,
+    #[serde(default)]
+    pub date_from: String,
+    #[serde(default)]
+    pub date_to: String,
+    #[serde(default)]
+    pub is_private: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ListSubjectsArgs {
+    #[serde(default = "default_pagination")]
+    pub page: i64,
+    #[serde(default = "default_pagination", alias = "per_page")]
+    pub per_page: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct IdArgs {
+    pub id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateAccessionArgs {
+    pub id: i32,
+    pub request: UpdateAccessionRequest,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateSubjectArgs {
+    pub request: CreateSubjectRequest,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DeleteSubjectArgs {
+    pub id: i32,
+    pub lang: MetadataLanguage,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct UpdateAccessionRequest {
     pub is_private: bool,
-    pub metadata_description: Option<String>,
+    #[serde(default)]
+    pub metadata_description: String,
     pub metadata_language: MetadataLanguage,
     pub metadata_subjects: Vec<i32>,
     pub metadata_time: String,

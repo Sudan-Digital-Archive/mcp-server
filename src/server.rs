@@ -5,41 +5,9 @@ use rmcp::{
     ErrorData as McpError, RoleServer, ServerHandler,
     handler::server::{router::tool::ToolRouter, wrapper::Parameters},
     model::*,
-    schemars::{self, JsonSchema},
     service::RequestContext,
     tool, tool_handler, tool_router,
 };
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct ListSubjectsArgs {
-    pub page: Option<i64>,
-    #[serde(alias = "per_page")]
-    pub per_page: Option<i64>,
-}
-
-#[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct IdArgs {
-    pub id: i32,
-}
-
-#[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct UpdateAccessionArgs {
-    pub id: i32,
-    pub request: UpdateAccessionRequest,
-}
-
-#[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct CreateSubjectArgs {
-    pub request: CreateSubjectRequest,
-}
-
-#[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct DeleteSubjectArgs {
-    pub id: i32,
-    pub lang: MetadataLanguage,
-}
 
 #[derive(Clone)]
 pub struct SdaServer {
@@ -143,7 +111,10 @@ impl SdaServer {
     ) -> Result<CallToolResult, McpError> {
         let response = self
             .client
-            .list_subjects(args.page, args.per_page)
+            .list_subjects(
+                if args.page != -1 { Some(args.page) } else { None },
+                if args.per_page != -1 { Some(args.per_page) } else { None },
+            )
             .await
             .map_err(|e| McpError::internal_error(e.to_string(), None))?;
 

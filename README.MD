@@ -27,11 +27,11 @@ Here is an example config you can add to a project's `.gemini/settings.json`:
  - List subjects - success
  - Create subject - success
  - Delete subject - success
- - List accessions - needs test
+ - List accessions - success
  - List private accessions - needs test
  - Get one accession - success
  - Get one private accession - success
- - Update an accession - needs test
+ - Update an accession - nsuccess
 
 ## To Dos
 
