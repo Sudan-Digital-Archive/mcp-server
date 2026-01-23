@@ -4,12 +4,18 @@
 //! including tool registration and handling.
 
 use crate::client::SdaClient;
-use crate::model::*;
-use anyhow::Result;
+use crate::model::{
+    CreateSubjectArgs, DeleteSubjectArgs, DeleteSubjectRequest, IdArgs, ListAccessionsArgs,
+    ListSubjectsArgs, UpdateAccessionArgs,
+};
+use anyhow::{Context, Result};
 use rmcp::{
     ErrorData as McpError, RoleServer, ServerHandler,
     handler::server::{router::tool::ToolRouter, wrapper::Parameters},
-    model::*,
+    model::{
+        CallToolResult, Content, Implementation, InitializeRequestParam, InitializeResult,
+        ProtocolVersion, ServerCapabilities, ServerInfo,
+    },
     service::RequestContext,
     tool, tool_handler, tool_router,
 };
@@ -46,7 +52,8 @@ impl SdaServer {
             .client
             .list_accessions(args)
             .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+            .context("Failed to list accessions")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&response).unwrap(),
@@ -63,7 +70,8 @@ impl SdaServer {
             .client
             .list_private_accessions(args)
             .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+            .context("Failed to list private accessions")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&response).unwrap(),
@@ -80,7 +88,8 @@ impl SdaServer {
             .client
             .get_accession(args.id)
             .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+            .context(format!("Failed to get accession with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&response).unwrap(),
@@ -97,7 +106,11 @@ impl SdaServer {
             .client
             .get_private_accession(args.id)
             .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+            .context(format!(
+                "Failed to get private accession with ID {}",
+                args.id
+            ))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&response).unwrap(),
@@ -114,7 +127,8 @@ impl SdaServer {
             .client
             .update_accession(args.id, args.request)
             .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+            .context(format!("Failed to update accession with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&response).unwrap(),
@@ -142,7 +156,8 @@ impl SdaServer {
                 },
             )
             .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+            .context("Failed to list subjects")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&response).unwrap(),
@@ -159,7 +174,8 @@ impl SdaServer {
             .client
             .create_subject(args.request)
             .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+            .context("Failed to create subject")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(response)]))
     }
@@ -174,7 +190,8 @@ impl SdaServer {
         self.client
             .delete_subject(args.id, request)
             .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+            .context(format!("Failed to delete subject with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(
             "Subject deleted successfully".to_string(),

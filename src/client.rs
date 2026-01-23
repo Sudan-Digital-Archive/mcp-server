@@ -3,7 +3,7 @@
 //! This module provides a client for making HTTP requests to the SDA API.
 
 use crate::model::*;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use reqwest::Client;
 
 /// Client for interacting with the Sudan Digital Archive API.
@@ -89,10 +89,15 @@ impl SdaClient {
             .header(self.auth_header().0, self.auth_header().1)
             .query(&query)
             .send()
-            .await?
-            .error_for_status()?;
+            .await
+            .context("Failed to send list accessions request")?
+            .error_for_status()
+            .context("Server returned error for list accessions")?;
 
-        Ok(response.json().await?)
+        response
+            .json()
+            .await
+            .context("Failed to parse list accessions response")
     }
 
     /// Fetches a list of private accessions.
@@ -109,9 +114,14 @@ impl SdaClient {
             .header(self.auth_header().0, self.auth_header().1)
             .query(&query)
             .send()
-            .await?
-            .error_for_status()?;
-        Ok(response.json().await?)
+            .await
+            .context("Failed to send list private accessions request")?
+            .error_for_status()
+            .context("Server returned error for list private accessions")?;
+        response
+            .json()
+            .await
+            .context("Failed to parse list private accessions response")
     }
 
     /// Retrieves a single public accession by its ID.
@@ -122,9 +132,14 @@ impl SdaClient {
             .get(&url)
             .header(self.auth_header().0, self.auth_header().1)
             .send()
-            .await?
-            .error_for_status()?;
-        Ok(response.json().await?)
+            .await
+            .context("Failed to send get accession request")?
+            .error_for_status()
+            .context("Server returned error for get accession")?;
+        response
+            .json()
+            .await
+            .context("Failed to parse get accession response")
     }
 
     /// Retrieves a single private accession by its ID.
@@ -135,9 +150,14 @@ impl SdaClient {
             .get(&url)
             .header(self.auth_header().0, self.auth_header().1)
             .send()
-            .await?
-            .error_for_status()?;
-        Ok(response.json().await?)
+            .await
+            .context("Failed to send get private accession request")?
+            .error_for_status()
+            .context("Server returned error for get private accession")?;
+        response
+            .json()
+            .await
+            .context("Failed to parse get private accession response")
     }
 
     /// Updates an existing accession.
@@ -153,10 +173,15 @@ impl SdaClient {
             .header(self.auth_header().0, self.auth_header().1)
             .json(&request)
             .send()
-            .await?
-            .error_for_status()?;
+            .await
+            .context("Failed to send update accession request")?
+            .error_for_status()
+            .context("Server returned error for update accession")?;
 
-        Ok(response.json().await?)
+        response
+            .json()
+            .await
+            .context("Failed to parse update accession response")
     }
 
     /// Lists metadata subjects with optional pagination.
@@ -180,9 +205,14 @@ impl SdaClient {
             .header(self.auth_header().0, self.auth_header().1)
             .query(&query)
             .send()
-            .await?
-            .error_for_status()?;
-        Ok(response.json().await?)
+            .await
+            .context("Failed to send list subjects request")?
+            .error_for_status()
+            .context("Server returned error for list subjects")?;
+        response
+            .json()
+            .await
+            .context("Failed to parse list subjects response")
     }
 
     /// Creates a new metadata subject.
@@ -194,9 +224,14 @@ impl SdaClient {
             .header(self.auth_header().0, self.auth_header().1)
             .json(&request)
             .send()
-            .await?
-            .error_for_status()?;
-        Ok(response.text().await?)
+            .await
+            .context("Failed to send create subject request")?
+            .error_for_status()
+            .context("Server returned error for create subject")?;
+        response
+            .text()
+            .await
+            .context("Failed to parse create subject response text")
     }
 
     /// Deletes a metadata subject by its ID.
@@ -207,8 +242,10 @@ impl SdaClient {
             .header(self.auth_header().0, self.auth_header().1)
             .json(&request)
             .send()
-            .await?
-            .error_for_status()?;
+            .await
+            .context("Failed to send delete subject request")?
+            .error_for_status()
+            .context("Server returned error for delete subject")?;
         Ok(())
     }
 }
