@@ -1,3 +1,8 @@
+//! Main entry point for the Sudan Digital Archive MCP Server.
+//!
+//! This module handles command-line argument parsing, logging initialization,
+//! and starts the MCP server using the stdio transport.
+
 use anyhow::Result;
 use clap::Parser;
 use rmcp::{ServiceExt, transport::stdio};
@@ -10,18 +15,24 @@ mod server;
 use client::SdaClient;
 use server::SdaServer;
 
+/// Command-line arguments for the Sudan Digital Archive MCP Server.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// API Key for Sudan Digital Archive
+    /// API Key for Sudan Digital Archive.
+    /// Can also be set via the `API_KEY` environment variable.
     #[arg(long, env = "API_KEY")]
     api_key: String,
 
-    /// Base URL for the API
+    /// Base URL for the Sudan Digital Archive API.
     #[arg(long, default_value = "https://api.sudandigitalarchive.com/sda-api")]
     base_url: String,
 }
 
+/// Main function to initialize and run the MCP server.
+///
+/// It parses arguments, sets up tracing for logging, and starts the server
+/// listening on stdin/stdout.
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();

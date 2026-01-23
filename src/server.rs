@@ -1,3 +1,8 @@
+//! MCP Server implementation for the Sudan Digital Archive.
+//!
+//! This module defines the `SdaServer` struct which implements the MCP server logic,
+//! including tool registration and handling.
+
 use crate::client::SdaClient;
 use crate::model::*;
 use anyhow::Result;
@@ -9,14 +14,21 @@ use rmcp::{
     tool, tool_handler, tool_router,
 };
 
+/// The Sudan Digital Archive MCP Server.
+///
+/// It wraps an `SdaClient` and provides tools to interact with the SDA API
+/// according to the Model Context Protocol.
 #[derive(Clone)]
 pub struct SdaServer {
+    /// Client for interacting with the SDA API.
     client: SdaClient,
+    /// Router for MCP tools.
     tool_router: ToolRouter<SdaServer>,
 }
 
 #[tool_router]
 impl SdaServer {
+    /// Creates a new instance of the `SdaServer`.
     pub fn new(client: SdaClient) -> Self {
         Self {
             client,
@@ -24,6 +36,7 @@ impl SdaServer {
         }
     }
 
+    /// Lists accessions from the Sudan Digital Archive.
     #[tool(description = "List accessions")]
     async fn list_accessions(
         &self,
@@ -40,6 +53,7 @@ impl SdaServer {
         )]))
     }
 
+    /// Lists private accessions from the Sudan Digital Archive.
     #[tool(description = "List private accessions")]
     async fn list_private_accessions(
         &self,
@@ -56,6 +70,7 @@ impl SdaServer {
         )]))
     }
 
+    /// Retrieves a single accession by its ID.
     #[tool(description = "Get a single accession")]
     async fn get_accession(
         &self,
@@ -72,6 +87,7 @@ impl SdaServer {
         )]))
     }
 
+    /// Retrieves a single private accession by its ID.
     #[tool(description = "Get a single private accession")]
     async fn get_private_accession(
         &self,
@@ -88,6 +104,7 @@ impl SdaServer {
         )]))
     }
 
+    /// Updates an existing accession.
     #[tool(description = "Update an accession")]
     async fn update_accession(
         &self,
@@ -104,6 +121,7 @@ impl SdaServer {
         )]))
     }
 
+    /// Lists metadata subjects available in the archive.
     #[tool(description = "List subjects")]
     async fn list_subjects(
         &self,
@@ -112,8 +130,16 @@ impl SdaServer {
         let response = self
             .client
             .list_subjects(
-                if args.page != -1 { Some(args.page) } else { None },
-                if args.per_page != -1 { Some(args.per_page) } else { None },
+                if args.page != -1 {
+                    Some(args.page)
+                } else {
+                    None
+                },
+                if args.per_page != -1 {
+                    Some(args.per_page)
+                } else {
+                    None
+                },
             )
             .await
             .map_err(|e| McpError::internal_error(e.to_string(), None))?;
@@ -123,6 +149,7 @@ impl SdaServer {
         )]))
     }
 
+    /// Creates a new metadata subject.
     #[tool(description = "Create a subject")]
     async fn create_subject(
         &self,
@@ -137,6 +164,7 @@ impl SdaServer {
         Ok(CallToolResult::success(vec![Content::text(response)]))
     }
 
+    /// Deletes an existing metadata subject.
     #[tool(description = "Delete a subject")]
     async fn delete_subject(
         &self,
@@ -156,6 +184,7 @@ impl SdaServer {
 
 #[tool_handler]
 impl ServerHandler for SdaServer {
+    /// Provides information about the server and its capabilities.
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
             protocol_version: ProtocolVersion::V_2024_11_05,
@@ -168,6 +197,7 @@ impl ServerHandler for SdaServer {
         }
     }
 
+    /// Initializes the server connection.
     async fn initialize(
         &self,
         _request: InitializeRequestParam,

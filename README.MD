@@ -1,51 +1,73 @@
-# Overview
+# Sudan Digital Archive MCP Server
 
-This repo is for a MCP server to talk to the Sudan Digital Archive API.
+**Experimental MCP Server**
 
-It is designed to be a stdio server shipped in a binary that runs on your own local machine.
+This is an experimental Model Context Protocol (MCP) server for the Sudan Digital Archive (SDA). It provides tools to interact with the SDA API, allowing for automations and enhanced search capabilities within MCP-compatible environments like Gemini or Claude.
 
-## Gemini Set Up
+## Features
 
-Here is an example config you can add to a project's `.gemini/settings.json`:
+- List and search public and private accessions.
+- Retrieve detailed metadata for specific accessions.
+- Manage metadata subjects (list, create, delete).
+- Update accession details.
 
-```JSON
-  "mcpServers": {
-    "sudan-digital-archive": {
-      "command": "path-to-binary",
-      "args": [
-        "--base-url",
-        "https://api.sudandigitalarchive.com/sda-api",
-        "--api-key",
-        "YOUR_API_KEY"
-      ]
-    }
-  }
+## Getting Started
+
+### Prerequisites
+
+- [Rust](https://www.rust-lang.org/tools/install) (latest stable version)
+- An API Key for the Sudan Digital Archive.
+
+### Building from Source
+
+You are expected to build the binary yourself for your specific platform:
+
+```bash
+cargo build --release
 ```
 
-## Testing
+The resulting binary will be located at `target/release/sudan-digital-archive-mcp-server`.
 
- - List subjects - success
- - Create subject - success
- - Delete subject - success
- - List accessions - success
- - List private accessions - needs test
- - Get one accession - success
- - Get one private accession - success
- - Update an accession - nsuccess
+### Configuration
 
-## To Dos
+You can configure the server using command-line arguments or environment variables.
 
-- Check the code; add linting and formatting
-- Add docstrings
-- Tidy up the readme
-- Add some kind of build command to get it on path
+- `--api-key` or `API_KEY`: Your SDA API key.
+- `--base-url`: (Optional) The base URL for the SDA API.
 
-## Known Issues
+### Integration Example (Gemini/Claude)
 
-A lot of these errors:
+To use this server with an MCP client, add it to your configuration. Here is an example for Gemini:
 
-│ x  list_subjects (sudan-digital-archive MCP Server) {"perPage":20,"page":2}                                                                                                                                      │
-│                                                                                                                                                                                                                  │
-│ no schema with key or ref "https://json-schema.org/draft/2020-12/schema"
+```json
+{
+  "mcpServers": {
+    "sudan-digital-archive": {
+      "command": "/path/to/your/sudan-digital-archive-mcp-server",
+      "args": [
+        "--api-key", "YOUR_API_KEY_HERE"
+      ],
+      "env": {
+        "API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
 
-But these are intermittent so seems related to gemini cli client to me...
+## Note on MCP Compatibility
+
+Model Context Protocol is a developing standard. During development, I observed that some MCP clients have issues consuming JSON schemas that use complex optional types (e.g., `Option<T>` in Rust translating to `anyOf: [..., { "type": "null" }]`).
+
+To maximize compatibility with current MCP clients, we have intentionally avoided using optional types for tool arguments, preferring default values (like `-1` for pagination or empty strings) where appropriate. This area may be updated in the future as MCP client implementations mature.
+
+## Development
+
+The project includes a GitHub workflow for quality assurance:
+- **Format**: Checks code formatting with `cargo fmt`.
+- **Lint**: Checks for common issues with `cargo clippy`.
+- **Check**: Ensures the project compiles successfully.
+
+## License
+
+This project is licensed under the terms of the license included in the repository.
