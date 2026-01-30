@@ -5,8 +5,8 @@
 
 use crate::client::SdaClient;
 use crate::model::{
-    CreateSubjectArgs, DeleteSubjectArgs, DeleteSubjectRequest, IdArgs, ListAccessionsArgs,
-    ListSubjectsArgs, UpdateAccessionArgs,
+    CreateAccessionCrawlArgs, CreateSubjectArgs, DeleteSubjectArgs, DeleteSubjectRequest, IdArgs,
+    ListAccessionsArgs, ListSubjectsArgs, UpdateAccessionArgs,
 };
 use anyhow::{Context, Result};
 use rmcp::{
@@ -133,6 +133,22 @@ impl SdaServer {
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&response).unwrap(),
         )]))
+    }
+
+    /// Creates a new accession by crawling a URL.
+    #[tool(description = "Create a new accession (crawl)")]
+    async fn create_accession_crawl(
+        &self,
+        Parameters(args): Parameters<CreateAccessionCrawlArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .create_accession_crawl(args.request)
+            .await
+            .context("Failed to create accession crawl")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(response)]))
     }
 
     /// Lists metadata subjects available in the archive.

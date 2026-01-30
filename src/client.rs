@@ -75,6 +75,28 @@ impl SdaClient {
         Ok(query)
     }
 
+    /// Creates a new accession (starts a crawl).
+    pub async fn create_accession_crawl(
+        &self,
+        request: CreateAccessionCrawlRequest,
+    ) -> Result<String> {
+        let url = format!("{}/api/v1/accessions/crawl", self.base_url);
+        let response = self
+            .client
+            .post(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context("Failed to send create accession crawl request")?
+            .error_for_status()
+            .context("Server returned error for create accession crawl")?;
+        response
+            .text()
+            .await
+            .context("Failed to parse create accession crawl response text")
+    }
+
     /// Fetches a list of public accessions.
     pub async fn list_accessions(
         &self,
