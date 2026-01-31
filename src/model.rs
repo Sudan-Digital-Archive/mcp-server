@@ -27,9 +27,24 @@ pub enum DublinMetadataFormat {
     Wacz,
 }
 
+/// Supported browser profiles for hard to archive sites.
+#[derive(Debug, Serialize, Deserialize, JsonSchema, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum BrowserProfile {
+    /// Profile for crawling Facebook.
+    Facebook,
+}
+
 /// Default value for pagination fields.
 fn default_pagination() -> i64 {
     -1
+}
+
+/// Arguments for creating a new accession (crawl).
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateAccessionCrawlArgs {
+    /// The parameters for creating the accession crawl.
+    pub request: CreateAccessionCrawlRequest,
 }
 
 /// Arguments for listing accessions.
@@ -144,6 +159,34 @@ pub struct CreateSubjectRequest {
 pub struct DeleteSubjectRequest {
     /// Language of the subject.
     pub lang: MetadataLanguage,
+}
+
+/// Request body for creating a new accession crawl.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateAccessionCrawlRequest {
+    /// The URL to crawl.
+    pub url: String,
+    /// Language of the metadata.
+    pub metadata_language: MetadataLanguage,
+    /// Title of the accession.
+    pub metadata_title: String,
+    /// Time period related to the accession (ISO 8601).
+    pub metadata_time: String,
+    /// List of subject IDs.
+    pub metadata_subjects: Vec<i32>,
+    /// Whether the accession is private.
+    pub is_private: bool,
+    /// Format of the metadata.
+    pub metadata_format: DublinMetadataFormat,
+    /// Optional browser profile for specific sites.
+    #[serde(default)]
+    pub browser_profile: Option<BrowserProfile>,
+    /// Description of the accession.
+    #[serde(default)]
+    pub metadata_description: Option<String>,
+    /// Optional S3 filename.
+    #[serde(default)]
+    pub s3_filename: Option<String>,
 }
 
 /// Status of a web crawl.
