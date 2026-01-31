@@ -14,9 +14,6 @@ permissions:
   contents: write
 
 jobs:
-  # --- Quality Assurance Stages ---
-  # These jobs run on every push and pull request to ensure code quality
-  
   format:
     name: Format
     runs-on: ubuntu-latest
@@ -36,7 +33,6 @@ jobs:
       - name: Install Rust
         run: rustup update stable && rustup component add clippy
       - name: Cache dependencies
-        # Cache cargo registry and git dependencies to speed up builds
         uses: actions/cache@v3
         with:
           path: |
@@ -66,7 +62,6 @@ jobs:
       - name: Cargo check
         run: cargo check
 
-  # --- Release Stages (Only on push to main) ---
   check-version:
     name: Check Version & Tag
     runs-on: ubuntu-latest
@@ -78,8 +73,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check if version is new
-        # Extract version from Cargo.toml and check if tag already exists
-        # This prevents duplicate releases for the same version
         id: check
         run: |
           VERSION=$(grep '^version =' Cargo.toml | cut -d '"' -f 2)
@@ -103,7 +96,6 @@ jobs:
     if: needs.check-version.outputs.should_release == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
-      # Build cross-platform binaries for Linux (x86_64), macOS (ARM64), and Windows (x86_64)
       matrix:
         include:
           - os: ubuntu-latest
@@ -120,7 +112,6 @@ jobs:
       - name: Install Rust
         run: rustup update stable
       - name: Add target
-        # Install the target triple to enable cross-compilation
         run: rustup target add ${{ matrix.target }}
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
@@ -133,7 +124,6 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           cd target/${{ matrix.target }}/release
-          # Create tar.gz archive for Unix systems
           tar -czf ../../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.tar.gz ${{ env.BIN_NAME }}
       
       - name: Check file (Unix)
@@ -153,7 +143,6 @@ jobs:
         shell: bash
         run: |
           cd target/${{ matrix.target }}/release
-          # Create zip archive for Windows
           7z a ../../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.zip ${{ env.BIN_NAME }}.exe
       
       - name: Check file (Windows)
@@ -177,21 +166,11 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Download Artifacts
-        # Downloads all artifacts from the build-release job
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      
-      - name: Debug Artifacts
-        # Lists contents to verify all platform artifacts were downloaded
-        run: |
-          echo "Contents of artifacts directory:"
-          ls -la artifacts/ || echo "artifacts directory not found or empty"
-          echo "Files in artifacts:"
-          find artifacts -type f 2>/dev/null || echo "no files found"
-      
+
       - name: Create Release
-        # Creates a GitHub release with the packaged binaries
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ needs.check-version.outputs.version }}

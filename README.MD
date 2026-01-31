@@ -1,6 +1,8 @@
 # Sudan Digital Archive MCP Server
 
-This is a Model Context Protocol (MCP) server for the Sudan Digital Archive (SDA). It provides tools to interact with the SDA API, allowing for automations and enhanced search capabilities within MCP-compatible environments like Gemini CLI or Claude Code.
+This is a Model Context Protocol (MCP) server for the Sudan Digital Archive (SDA). It provides tools to interact with 
+the SDA API, allowing for automations and enhanced search capabilities within MCP-compatible environments like 
+Gemini CLI or Claude Code.
 
 ## Features
 
@@ -26,10 +28,17 @@ cargo build --release
 
 The resulting binary will be located at `target/release/sda-mcp-server`.
 
-### Pre-built Binaries
+### Install
 
-You can download pre-built binaries for macOS, Linux, and Windows from the 
-[Releases](https://github.com/Sudan-Digital-Archive/mcp-serverreleases) page.
+**macOS & Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/Sudan-Digital-Archive/mcp-server/main/install.sh | sh
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/Sudan-Digital-Archive/mcp-server/main/install.ps1 | iex
+```
 
 ### Configuration
 
@@ -46,7 +55,7 @@ To use this server with an MCP client, add it to your configuration. Here is an 
 {
   "mcpServers": {
     "sudan-digital-archive": {
-      "command": "/path/to/your/sda-mcp-server-binary",
+      "command": "sda-mcp-server",
       "args": [
         "--api-key", "YOUR_API_KEY_HERE"
       ],
@@ -60,16 +69,17 @@ To use this server with an MCP client, add it to your configuration. Here is an 
 
 ## Note on MCP Compatibility
 
-Model Context Protocol is a developing standard. During development, I observed that some MCP clients have issues consuming JSON schemas that use complex optional types (e.g., `Option<T>` in Rust translating to `anyOf: [..., { "type": "null" }]`).
+Model Context Protocol is a developing standard. During development, I observed that some MCP clients have 
+issues consuming JSON schemas that use complex optional types (e.g., `Option<T>` in Rust 
+translating to `anyOf: [..., { "type": "null" }]`).
 
-To maximize compatibility with current MCP clients, we have intentionally avoided using optional types for tool arguments, preferring default values (like `-1` for pagination or empty strings) where appropriate. This area may be updated in the future as MCP client implementations mature.
+To maximize compatibility with current MCP clients, we have intentionally avoided using optional types for tool 
+arguments, preferring default values (like `-1` for pagination or empty strings) where appropriate. 
+This area may be updated in the future as MCP client implementations mature.
 
 ## Development
 
 The project includes a GitHub workflow for CI/CD:
 - **Quality Assurance**: Runs formatting, linting, and compilation checks on every PR and push to main.
-- **Automated Releases**: Automatically builds and publishes binaries to GitHub Releases when the version in `Cargo.toml` is updated on the main branch.
-
-## License
-
-This project is licensed under the terms of the license included in the repository.
+- **Automated Releases**: Automatically builds and publishes binaries to GitHub Releases when the version 
+  in `Cargo.toml` is updated on the main branch.
