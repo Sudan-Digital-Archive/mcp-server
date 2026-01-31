@@ -30,7 +30,7 @@ To build the release binary:
 ```bash
 cargo build --release
 ```
-The binary will be created at `target/release/sudan-digital-archive-mcp-server`.
+The binary will be created at `target/release/sda-mcp-server`.
 
 ### Run
 The server communicates via `stdin` and `stdout`. It is typically run by an MCP client, but you can execute it manually for testing (though it expects JSON-RPC messages on stdin):
@@ -56,4 +56,4 @@ cargo test
 *   **Formatting & Linting**:
     *   Format: `cargo fmt`
     *   Lint: `cargo clippy`
-*   **CI/CD**: A GitHub Actions workflow (`.github/workflows/qa.yml`) runs formatting, linting, and compilation checks.
+*   **CI/CD**: A GitHub Actions workflow (`.github/workflows/ci_cd.yml`) runs formatting, linting, and compilation checks, and handles automated releases to GitHub.

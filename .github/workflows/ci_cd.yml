@@ -1,0 +1,151 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+  BIN_NAME: sda-mcp-server
+
+permissions:
+  contents: write
+
+jobs:
+  # --- Quality Assurance Stages ---
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup update stable && rustup component add rustfmt
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: format
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup update stable && rustup component add clippy
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+      - name: Clippy check
+        run: cargo clippy -- -D warnings
+
+  check:
+    name: Check Compilation
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup update stable
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+      - name: Cargo check
+        run: cargo check
+
+  # --- Release Stages (Only on push to main) ---
+  check-version:
+    name: Check Version & Tag
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: check
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check if version is new
+        id: check
+        run: |
+          VERSION=$(grep '^version =' Cargo.toml | cut -d '"' -f 2)
+          echo "Detected version: $VERSION"
+          
+          # Check if tag exists via git ls-remote
+          git_refs=$(git ls-remote --tags origin "refs/tags/v$VERSION")
+          
+          if [ -z "$git_refs" ]; then
+            echo "Tag v$VERSION does not exist. Triggering release."
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "Tag v$VERSION already exists. Skipping release."
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          fi
+
+  build-release:
+    name: Build Release Binaries
+    needs: check-version
+    if: needs.check-version.outputs.should_release == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            asset_suffix: linux-x86_64
+            use_zip: false
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            asset_suffix: macos-arm64
+            use_zip: false
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            asset_suffix: windows-x86_64
+            use_zip: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup update stable
+      - name: Build
+        run: cargo build --release
+      
+      # Packaging
+      - name: Package (Unix)
+        if: matrix.use_zip == false
+        run: |
+          cd target/release
+          tar -czf ../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.tar.gz ${{ env.BIN_NAME }}
+      
+      - name: Package (Windows)
+        if: matrix.use_zip == true
+        run: |
+          cd target/release
+          7z a ../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.zip ${{ env.BIN_NAME }}.exe
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-asset-${{ matrix.asset_suffix }}
+          path: ${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.*
+
+  publish:
+    name: Publish Release
+    needs: [check-version, build-release]
+    runs-on: ubuntu-latest
+    if: needs.check-version.outputs.should_release == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.check-version.outputs.version }}
+        run: |
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --generate-notes \
+            artifacts/*

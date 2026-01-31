@@ -1,8 +1,6 @@
 # Sudan Digital Archive MCP Server
 
-**Experimental MCP Server**
-
-This is an experimental Model Context Protocol (MCP) server for the Sudan Digital Archive (SDA). It provides tools to interact with the SDA API, allowing for automations and enhanced search capabilities within MCP-compatible environments like Gemini or Claude.
+This is a Model Context Protocol (MCP) server for the Sudan Digital Archive (SDA). It provides tools to interact with the SDA API, allowing for automations and enhanced search capabilities within MCP-compatible environments like Gemini CLI or Claude Code.
 
 ## Features
 
@@ -26,7 +24,12 @@ You are expected to build the binary yourself for your specific platform:
 cargo build --release
 ```
 
-The resulting binary will be located at `target/release/sudan-digital-archive-mcp-server`.
+The resulting binary will be located at `target/release/sda-mcp-server`.
+
+### Pre-built Binaries
+
+You can download pre-built binaries for macOS, Linux, and Windows from the 
+[Releases](https://github.com/Sudan-Digital-Archive/mcp-serverreleases) page.
 
 ### Configuration
 
@@ -43,7 +46,7 @@ To use this server with an MCP client, add it to your configuration. Here is an 
 {
   "mcpServers": {
     "sudan-digital-archive": {
-      "command": "/path/to/your/sudan-digital-archive-mcp-server",
+      "command": "/path/to/your/sda-mcp-server-binary",
       "args": [
         "--api-key", "YOUR_API_KEY_HERE"
       ],
@@ -63,10 +66,9 @@ To maximize compatibility with current MCP clients, we have intentionally avoide
 
 ## Development
 
-The project includes a GitHub workflow for quality assurance:
-- **Format**: Checks code formatting with `cargo fmt`.
-- **Lint**: Checks for common issues with `cargo clippy`.
-- **Check**: Ensures the project compiles successfully.
+The project includes a GitHub workflow for CI/CD:
+- **Quality Assurance**: Runs formatting, linting, and compilation checks on every PR and push to main.
+- **Automated Releases**: Automatically builds and publishes binaries to GitHub Releases when the version in `Cargo.toml` is updated on the main branch.
 
 ## License
 
