@@ -124,17 +124,25 @@ jobs:
           cd target/${{ matrix.target }}/release
           tar -czf ../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.tar.gz ${{ env.BIN_NAME }}
       
+      - name: Upload Artifact (Unix)
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-asset-${{ matrix.asset_suffix }}
+          path: ${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.tar.gz
+      
       - name: Package (Windows)
         if: runner.os == 'Windows'
         run: |
           cd target/${{ matrix.target }}/release
           7z a ../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.zip ${{ env.BIN_NAME }}.exe
-
-      - name: Upload Artifact
+      
+      - name: Upload Artifact (Windows)
+        if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: release-asset-${{ matrix.asset_suffix }}
-          path: ${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.*
+          path: ${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.zip
 
   publish:
     name: Publish Release
@@ -148,6 +156,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+      
+      - name: Debug Artifacts
+        run: |
+          echo "Contents of artifacts directory:"
+          ls -la artifacts/ || echo "artifacts directory not found or empty"
+          echo "Files in artifacts:"
+          find artifacts -type f 2>/dev/null || echo "no files found"
       
       - name: Create Release
         env:
