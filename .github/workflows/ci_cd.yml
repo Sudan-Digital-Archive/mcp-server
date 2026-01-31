@@ -111,18 +111,23 @@ jobs:
             asset_suffix: windows-x86_64
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust
-        run: rustup update stable
       - name: Add target
         run: rustup target add ${{ matrix.target }}
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
       
+      - name: Check binary
+        run: ls -la target/${{ matrix.target }}/release/${{ env.BIN_NAME }}* || echo "binary not found in target/${{ matrix.target }}/release"
+      
       - name: Package (Unix)
         if: runner.os != 'Windows'
         run: |
           cd target/${{ matrix.target }}/release
-          tar -czf ../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.tar.gz ${{ env.BIN_NAME }}
+          tar -czf ../../../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.tar.gz ${{ env.BIN_NAME }}
+      
+      - name: Check file (Unix)
+        if: runner.os != 'Windows'
+        run: ls -la ${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.tar.gz || echo "file not found"
       
       - name: Upload Artifact (Unix)
         if: runner.os != 'Windows'
@@ -135,7 +140,11 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd target/${{ matrix.target }}/release
-          7z a ../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.zip ${{ env.BIN_NAME }}.exe
+          7z a ../../../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.zip ${{ env.BIN_NAME }}.exe
+      
+      - name: Check file (Windows)
+        if: runner.os == 'Windows'
+        run: ls -la ${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.zip || echo "file not found"
       
       - name: Upload Artifact (Windows)
         if: runner.os == 'Windows'
