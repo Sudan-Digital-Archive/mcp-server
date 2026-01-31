@@ -101,17 +101,19 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Rust
         run: rustup update stable
+      - name: Add target
+        run: rustup target add ${{ matrix.target }}
       - name: Build
-        run: cargo build --release
+        run: cargo build --release --target ${{ matrix.target }}
       
       - name: Package (Unix)
         run: |
-          cd target/release
+          cd target/${{ matrix.target }}/release
           tar -czf ../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.tar.gz ${{ env.BIN_NAME }}
       
       - name: Package (Windows)
         run: |
-          cd target/release
+          cd target/${{ matrix.target }}/release
           7z a ../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.zip ${{ env.BIN_NAME }}.exe
 
       - name: Upload Artifact
