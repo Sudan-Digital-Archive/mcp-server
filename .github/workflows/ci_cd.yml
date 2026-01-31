@@ -91,15 +91,12 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             asset_suffix: linux-x86_64
-            use_zip: false
           - os: macos-latest
             target: aarch64-apple-darwin
             asset_suffix: macos-arm64
-            use_zip: false
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             asset_suffix: windows-x86_64
-            use_zip: true
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust
@@ -107,15 +104,12 @@ jobs:
       - name: Build
         run: cargo build --release
       
-      # Packaging
       - name: Package (Unix)
-        if: matrix.use_zip == false
         run: |
           cd target/release
           tar -czf ../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.tar.gz ${{ env.BIN_NAME }}
       
       - name: Package (Windows)
-        if: matrix.use_zip == true
         run: |
           cd target/release
           7z a ../../${{ env.BIN_NAME }}-${{ matrix.asset_suffix }}.zip ${{ env.BIN_NAME }}.exe
