@@ -206,14 +206,23 @@ impl SdaClient {
             .context("Failed to parse update accession response")
     }
 
-    /// Lists metadata subjects with optional pagination.
+    /// Lists metadata subjects with language parameter and optional pagination.
     pub async fn list_subjects(
         &self,
+        lang: MetadataLanguage,
         page: Option<i64>,
         per_page: Option<i64>,
     ) -> Result<ListSubjectsResponse> {
         let url = format!("{}/api/v1/metadata-subjects", self.base_url);
         let mut query = vec![];
+
+        // Add language parameter
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => query.push(("lang", "english".to_string())), // fallback
+        }
+
         if let Some(p) = page {
             query.push(("page", p.to_string()));
         }
