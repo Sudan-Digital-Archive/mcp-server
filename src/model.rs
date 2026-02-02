@@ -93,6 +93,8 @@ pub struct ListSubjectsArgs {
     /// Number of items per page.
     #[serde(default = "default_pagination", alias = "per_page")]
     pub per_page: i64,
+    /// Language for subjects - REQUIRED field.
+    pub lang: MetadataLanguage,
 }
 
 /// Simple arguments containing only an ID.

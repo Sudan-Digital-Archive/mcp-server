@@ -160,6 +160,7 @@ impl SdaServer {
         let response = self
             .client
             .list_subjects(
+                args.lang,
                 if args.page != -1 {
                     Some(args.page)
                 } else {
