@@ -83,6 +83,23 @@ pub struct ListAccessionsArgs {
     pub is_private: bool,
 }
 
+impl Default for ListAccessionsArgs {
+    fn default() -> Self {
+        Self {
+            page: -1,
+            per_page: -1,
+            lang: MetadataLanguage::default(),
+            metadata_subjects: Vec::new(),
+            metadata_subjects_inclusive_filter: false,
+            query_term: String::new(),
+            url_filter: String::new(),
+            date_from: String::new(),
+            date_to: String::new(),
+            is_private: false,
+        }
+    }
+}
+
 /// Arguments for listing metadata subjects.
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
@@ -129,6 +146,15 @@ pub struct DeleteSubjectArgs {
     pub lang: MetadataLanguage,
 }
 
+/// Arguments for updating a metadata subject.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateSubjectArgs {
+    /// The ID of the subject to update.
+    pub id: i32,
+    /// The updated subject data.
+    pub request: UpdateSubjectRequest,
+}
+
 /// Request body for updating an accession.
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct UpdateAccessionRequest {
@@ -161,6 +187,15 @@ pub struct CreateSubjectRequest {
 pub struct DeleteSubjectRequest {
     /// Language of the subject.
     pub lang: MetadataLanguage,
+}
+
+/// Request body for updating a metadata subject.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateSubjectRequest {
+    /// Language of the subject.
+    pub lang: MetadataLanguage,
+    /// The subject name/term.
+    pub metadata_subject: String,
 }
 
 /// Request body for creating a new accession crawl.

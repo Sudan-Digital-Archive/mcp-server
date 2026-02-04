@@ -6,7 +6,7 @@
 use crate::client::SdaClient;
 use crate::model::{
     CreateAccessionCrawlArgs, CreateSubjectArgs, DeleteSubjectArgs, DeleteSubjectRequest, IdArgs,
-    ListAccessionsArgs, ListSubjectsArgs, UpdateAccessionArgs,
+    ListAccessionsArgs, ListSubjectsArgs, UpdateAccessionArgs, UpdateSubjectArgs,
 };
 use anyhow::{Context, Result};
 use rmcp::{
@@ -212,6 +212,24 @@ impl SdaServer {
 
         Ok(CallToolResult::success(vec![Content::text(
             "Subject deleted successfully".to_string(),
+        )]))
+    }
+
+    /// Updates an existing metadata subject.
+    #[tool(description = "Update a subject")]
+    async fn update_subject(
+        &self,
+        Parameters(args): Parameters<UpdateSubjectArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .update_subject(args.id, args.request)
+            .await
+            .context(format!("Failed to update subject with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
         )]))
     }
 }

@@ -279,4 +279,135 @@ impl SdaClient {
             .context("Server returned error for delete subject")?;
         Ok(())
     }
+
+    /// Updates a metadata subject by its ID.
+    pub async fn update_subject(
+        &self,
+        id: i32,
+        request: UpdateSubjectRequest,
+    ) -> Result<DublinMetadataSubjectResponse> {
+        let url = format!("{}/api/v1/metadata-subjects/{}", self.base_url, id);
+        let response = self
+            .client
+            .put(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context("Failed to send update subject request")?
+            .error_for_status()
+            .context("Server returned error for update subject")?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse update subject response")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_update_subject_url_construction() {
+        let client = SdaClient::new(
+            "https://api.example.com".to_string(),
+            "test-key".to_string(),
+        );
+        let id = 42;
+        let expected_url = "https://api.example.com/api/v1/metadata-subjects/42";
+
+        // Test URL construction by checking format string
+        let constructed_url = format!("{}/api/v1/metadata-subjects/{}", client.base_url, id);
+        assert_eq!(constructed_url, expected_url);
+    }
+
+    #[test]
+    fn test_auth_header_format() {
+        let client = SdaClient::new(
+            "https://api.example.com".to_string(),
+            "my-api-key".to_string(),
+        );
+        let (header_name, header_value) = client.auth_header();
+
+        assert_eq!(header_name, "x-api-key");
+        assert_eq!(header_value, "my-api-key");
+    }
+
+    #[test]
+    fn test_build_accession_query_with_empty_args() {
+        let client = SdaClient::new(
+            "https://api.example.com".to_string(),
+            "test-key".to_string(),
+        );
+        let args = ListAccessionsArgs::default();
+
+        let result = client.build_accession_query(args).unwrap();
+        assert!(
+            result.is_empty(),
+            "Empty args should produce empty query vector"
+        );
+    }
+
+    #[test]
+    fn test_build_accession_query_with_pagination() {
+        let client = SdaClient::new(
+            "https://api.example.com".to_string(),
+            "test-key".to_string(),
+        );
+        let mut args = ListAccessionsArgs::default();
+        args.page = 2;
+        args.per_page = 25;
+
+        let result = client.build_accession_query(args).unwrap();
+        assert_eq!(result.len(), 2);
+
+        // Check that pagination parameters are included
+        let page_param = result.iter().find(|(key, _)| *key == "page");
+        let per_page_param = result.iter().find(|(key, _)| *key == "per_page");
+
+        assert!(page_param.is_some());
+        assert_eq!(page_param.unwrap().1, "2");
+        assert!(per_page_param.is_some());
+        assert_eq!(per_page_param.unwrap().1, "25");
+    }
+
+    #[test]
+    fn test_build_accession_query_with_language_filter() {
+        let client = SdaClient::new(
+            "https://api.example.com".to_string(),
+            "test-key".to_string(),
+        );
+        let mut args = ListAccessionsArgs::default();
+        args.lang = MetadataLanguage::Arabic;
+
+        let result = client.build_accession_query(args).unwrap();
+        assert_eq!(result.len(), 1);
+
+        let lang_param = result.iter().find(|(key, _)| *key == "lang");
+        assert!(lang_param.is_some());
+        assert_eq!(lang_param.unwrap().1, "arabic");
+    }
+
+    #[test]
+    fn test_build_accession_query_ignores_default_pagination() {
+        let client = SdaClient::new(
+            "https://api.example.com".to_string(),
+            "test-key".to_string(),
+        );
+        let mut args = ListAccessionsArgs::default();
+        args.page = -1; // Default value
+        args.per_page = -1; // Default value
+        args.lang = MetadataLanguage::English;
+
+        let result = client.build_accession_query(args).unwrap();
+        assert_eq!(result.len(), 1); // Only language should be included
+
+        let page_param = result.iter().find(|(key, _)| *key == "page");
+        let per_page_param = result.iter().find(|(key, _)| *key == "per_page");
+
+        assert!(page_param.is_none());
+        assert!(per_page_param.is_none());
+    }
 }
