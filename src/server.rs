@@ -5,8 +5,10 @@
 
 use crate::client::SdaClient;
 use crate::model::{
-    CreateAccessionCrawlArgs, CreateSubjectArgs, DeleteSubjectArgs, DeleteSubjectRequest, IdArgs,
-    ListAccessionsArgs, ListSubjectsArgs, UpdateAccessionArgs, UpdateSubjectArgs,
+    CreateAccessionCrawlArgs, CreateCollectionArgs, CreateSubjectArgs, DeleteSubjectArgs,
+    DeleteSubjectRequest, GetCollectionArgs, IdArgs, ListAccessionsArgs, ListCollectionsArgs,
+    ListPrivateCollectionsArgs, ListSubjectsArgs, UpdateAccessionArgs, UpdateCollectionArgs,
+    UpdateSubjectArgs,
 };
 use anyhow::{Context, Result};
 use rmcp::{
@@ -226,6 +228,94 @@ impl SdaServer {
             .update_subject(args.id, args.request)
             .await
             .context(format!("Failed to update subject with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    /// Lists public collections from the Sudan Digital Archive.
+    #[tool(description = "List public collections")]
+    async fn list_collections(
+        &self,
+        Parameters(args): Parameters<ListCollectionsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .list_collections(args)
+            .await
+            .context("Failed to list collections")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    /// Lists private collections from the Sudan Digital Archive.
+    #[tool(description = "List private collections")]
+    async fn list_private_collections(
+        &self,
+        Parameters(args): Parameters<ListPrivateCollectionsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .list_private_collections(args)
+            .await
+            .context("Failed to list private collections")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    /// Retrieves a single collection by its ID.
+    #[tool(description = "Get a single collection")]
+    async fn get_collection(
+        &self,
+        Parameters(args): Parameters<GetCollectionArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .get_collection(args.id, args.lang)
+            .await
+            .context(format!("Failed to get collection with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    /// Creates a new collection.
+    #[tool(description = "Create a collection")]
+    async fn create_collection(
+        &self,
+        Parameters(args): Parameters<CreateCollectionArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .create_collection(args.request)
+            .await
+            .context("Failed to create collection")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(response)]))
+    }
+
+    /// Updates an existing collection.
+    #[tool(description = "Update a collection")]
+    async fn update_collection(
+        &self,
+        Parameters(args): Parameters<UpdateCollectionArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .update_collection(args.id, args.request)
+            .await
+            .context(format!("Failed to update collection with ID {}", args.id))
             .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(

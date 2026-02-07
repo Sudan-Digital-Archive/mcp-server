@@ -303,6 +303,166 @@ impl SdaClient {
             .await
             .context("Failed to parse update subject response")
     }
+
+    /// Lists public collections.
+    pub async fn list_collections(
+        &self,
+        args: ListCollectionsArgs,
+    ) -> Result<ListCollectionsResponse> {
+        let url = format!("{}/api/v1/collections", self.base_url);
+        let mut query = vec![];
+
+        if args.page != -1 {
+            query.push(("page", args.page.to_string()));
+        }
+        if args.per_page != -1 {
+            query.push(("per_page", args.per_page.to_string()));
+        }
+        match args.lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context("Failed to send list collections request")?
+            .error_for_status()
+            .context("Server returned error for list collections")?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse list collections response")
+    }
+
+    /// Lists private collections.
+    pub async fn list_private_collections(
+        &self,
+        args: ListPrivateCollectionsArgs,
+    ) -> Result<ListCollectionsResponse> {
+        let url = format!("{}/api/v1/collections/private", self.base_url);
+        let mut query = vec![];
+
+        if args.page != -1 {
+            query.push(("page", args.page.to_string()));
+        }
+        if args.per_page != -1 {
+            query.push(("per_page", args.per_page.to_string()));
+        }
+        match args.lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+        query.push(("is_public", args.is_public.to_string()));
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context("Failed to send list private collections request")?
+            .error_for_status()
+            .context("Server returned error for list private collections")?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse list private collections response")
+    }
+
+    /// Retrieves a single collection by its ID.
+    pub async fn get_collection(
+        &self,
+        id: i32,
+        lang: MetadataLanguage,
+    ) -> Result<CollectionResponse> {
+        let url = format!("{}/api/v1/collections/{}", self.base_url, id);
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send get collection request for ID {}",
+                id
+            ))?
+            .error_for_status()
+            .context(format!("Server returned error for get collection {}", id))?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse get collection response")
+    }
+
+    /// Creates a new collection.
+    pub async fn create_collection(&self, request: CreateCollectionRequest) -> Result<String> {
+        let url = format!("{}/api/v1/collections", self.base_url);
+        let response = self
+            .client
+            .post(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context("Failed to send create collection request")?
+            .error_for_status()
+            .context("Server returned error for create collection")?;
+
+        response
+            .text()
+            .await
+            .context("Failed to parse create collection response text")
+    }
+
+    /// Updates an existing collection.
+    pub async fn update_collection(
+        &self,
+        id: i32,
+        request: UpdateCollectionRequest,
+    ) -> Result<CollectionResponse> {
+        let url = format!("{}/api/v1/collections/{}", self.base_url, id);
+        let response = self
+            .client
+            .put(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send update collection request for ID {}",
+                id
+            ))?
+            .error_for_status()
+            .context(format!(
+                "Server returned error for update collection {}",
+                id
+            ))?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse update collection response")
+    }
 }
 
 #[cfg(test)]
@@ -409,5 +569,54 @@ mod tests {
 
         assert!(page_param.is_none());
         assert!(per_page_param.is_none());
+    }
+
+    #[test]
+    fn test_collection_url_construction() {
+        let client = SdaClient::new(
+            "https://api.example.com".to_string(),
+            "test-key".to_string(),
+        );
+        let id = 123;
+        let expected_url = "https://api.example.com/api/v1/collections/123";
+
+        // Test URL construction by checking format string
+        let constructed_url = format!("{}/api/v1/collections/{}", client.base_url, id);
+        assert_eq!(constructed_url, expected_url);
+    }
+
+    #[test]
+    fn test_list_collections_args_default() {
+        let args = ListCollectionsArgs::default();
+
+        assert_eq!(args.page, -1);
+        assert_eq!(args.per_page, -1);
+        assert_eq!(args.lang, MetadataLanguage::None);
+    }
+
+    #[test]
+    fn test_list_private_collections_args_default() {
+        let args = ListPrivateCollectionsArgs::default();
+
+        assert_eq!(args.page, -1);
+        assert_eq!(args.per_page, -1);
+        assert_eq!(args.lang, MetadataLanguage::None);
+        assert_eq!(args.is_public, false);
+    }
+
+    #[test]
+    fn test_create_collection_request_serialization() {
+        let request = CreateCollectionRequest {
+            lang: MetadataLanguage::English,
+            title: "Test Collection".to_string(),
+            is_public: true,
+            subject_ids: vec![1, 2, 3],
+            description: "A test description".to_string(),
+        };
+
+        let json = serde_json::to_string(&request).unwrap();
+        assert!(json.contains("Test Collection"));
+        assert!(json.contains("A test description"));
+        assert!(json.contains("true"));
     }
 }
