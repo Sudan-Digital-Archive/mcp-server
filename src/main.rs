@@ -20,8 +20,8 @@ use server::SdaServer;
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// API Key for Sudan Digital Archive.
-    /// Can also be set via the `API_KEY` environment variable.
-    #[arg(long, env = "API_KEY")]
+    /// Can also be set via the `SDA_API_KEY` environment variable.
+    #[arg(long, env = "SDA_API_KEY")]
     api_key: String,
 
     /// Base URL for the Sudan Digital Archive API.

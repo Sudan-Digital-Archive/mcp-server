@@ -321,3 +321,141 @@ pub struct ListSubjectsResponse {
     /// Items per page.
     pub per_page: i64,
 }
+
+/// Arguments for listing collections.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ListCollectionsArgs {
+    /// Page number for pagination.
+    #[serde(default = "default_pagination")]
+    pub page: i64,
+    /// Number of items per page.
+    #[serde(default = "default_pagination", alias = "per_page")]
+    pub per_page: i64,
+    /// Language filter.
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
+impl Default for ListCollectionsArgs {
+    fn default() -> Self {
+        Self {
+            page: -1,
+            per_page: -1,
+            lang: MetadataLanguage::default(),
+        }
+    }
+}
+
+/// Arguments for listing private collections.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ListPrivateCollectionsArgs {
+    /// Page number for pagination.
+    #[serde(default = "default_pagination")]
+    pub page: i64,
+    /// Number of items per page.
+    #[serde(default = "default_pagination", alias = "per_page")]
+    pub per_page: i64,
+    /// Language filter.
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+    /// Filter by public status.
+    #[serde(default)]
+    pub is_public: bool,
+}
+
+impl Default for ListPrivateCollectionsArgs {
+    fn default() -> Self {
+        Self {
+            page: -1,
+            per_page: -1,
+            lang: MetadataLanguage::default(),
+            is_public: false,
+        }
+    }
+}
+
+/// Arguments for getting a single collection.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct GetCollectionArgs {
+    /// The collection ID.
+    pub id: i32,
+    /// Language for the collection.
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
+/// Arguments for creating a collection.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateCollectionArgs {
+    /// The collection data to create.
+    pub request: CreateCollectionRequest,
+}
+
+/// Arguments for updating a collection.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateCollectionArgs {
+    /// The ID of the collection to update.
+    pub id: i32,
+    /// The updated collection data.
+    pub request: UpdateCollectionRequest,
+}
+
+/// Request body for creating a collection.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateCollectionRequest {
+    /// Language of the collection.
+    pub lang: MetadataLanguage,
+    /// Title of the collection.
+    pub title: String,
+    /// Whether the collection is public.
+    pub is_public: bool,
+    /// List of subject IDs.
+    pub subject_ids: Vec<i32>,
+    /// Description of the collection.
+    #[serde(default)]
+    pub description: String,
+}
+
+/// Request body for updating a collection.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateCollectionRequest {
+    /// Language of the collection.
+    pub lang: MetadataLanguage,
+    /// Title of the collection.
+    pub title: String,
+    /// Whether the collection is public.
+    pub is_public: bool,
+    /// List of subject IDs.
+    pub subject_ids: Vec<i32>,
+    /// Description of the collection.
+    #[serde(default)]
+    pub description: String,
+}
+
+/// Response containing a single collection.
+#[derive(Debug, Serialize, Deserialize, JsonSchema, Clone)]
+pub struct CollectionResponse {
+    /// Unique identifier.
+    pub id: i32,
+    /// Title of the collection.
+    pub title: String,
+    /// Whether the collection is public.
+    pub is_public: bool,
+    /// Description of the collection.
+    pub description: Option<String>,
+}
+
+/// Response containing a list of collections.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct ListCollectionsResponse {
+    /// List of collections.
+    pub items: Vec<CollectionResponse>,
+    /// Total number of pages.
+    pub num_pages: i64,
+    /// Current page number.
+    pub page: i64,
+    /// Items per page.
+    pub per_page: i64,
+}
