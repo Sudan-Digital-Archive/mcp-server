@@ -32,6 +32,31 @@ impl SdaClient {
         ("x-api-key", &self.api_key)
     }
 
+    /// Helper function to handle HTTP responses and capture error bodies.
+    ///
+    /// This is preferred over `error_for_status()` because it captures
+    /// the response body (e.g., validation error details) and includes it
+    /// in the error message, making debugging much easier.
+    async fn handle_response(
+        response: reqwest::Response,
+        context: &str,
+    ) -> Result<reqwest::Response> {
+        if !response.status().is_success() {
+            let status = response.status();
+            let body = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "<failed to read error body>".to_string());
+            let msg = if body.is_empty() {
+                format!("{}: HTTP {}", context, status)
+            } else {
+                format!("{}: HTTP {} - {}", context, status, body)
+            };
+            return Err(anyhow::anyhow!(msg));
+        }
+        Ok(response)
+    }
+
     /// Builds a query vector for accession-related requests.
     fn build_accession_query(
         &self,
@@ -88,9 +113,12 @@ impl SdaClient {
             .json(&request)
             .send()
             .await
-            .context("Failed to send create accession crawl request")?
-            .error_for_status()
-            .context("Server returned error for create accession crawl")?;
+            .context("Failed to send create accession crawl request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for create accession crawl")
+                .await?;
+
         response
             .text()
             .await
@@ -112,9 +140,10 @@ impl SdaClient {
             .query(&query)
             .send()
             .await
-            .context("Failed to send list accessions request")?
-            .error_for_status()
-            .context("Server returned error for list accessions")?;
+            .context("Failed to send list accessions request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for list accessions").await?;
 
         response
             .json()
@@ -137,9 +166,14 @@ impl SdaClient {
             .query(&query)
             .send()
             .await
-            .context("Failed to send list private accessions request")?
-            .error_for_status()
-            .context("Server returned error for list private accessions")?;
+            .context("Failed to send list private accessions request")?;
+
+        let response = Self::handle_response(
+            response,
+            "Server returned error for list private accessions",
+        )
+        .await?;
+
         response
             .json()
             .await
@@ -155,9 +189,11 @@ impl SdaClient {
             .header(self.auth_header().0, self.auth_header().1)
             .send()
             .await
-            .context("Failed to send get accession request")?
-            .error_for_status()
-            .context("Server returned error for get accession")?;
+            .context("Failed to send get accession request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for get accession").await?;
+
         response
             .json()
             .await
@@ -173,9 +209,12 @@ impl SdaClient {
             .header(self.auth_header().0, self.auth_header().1)
             .send()
             .await
-            .context("Failed to send get private accession request")?
-            .error_for_status()
-            .context("Server returned error for get private accession")?;
+            .context("Failed to send get private accession request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for get private accession")
+                .await?;
+
         response
             .json()
             .await
@@ -196,9 +235,10 @@ impl SdaClient {
             .json(&request)
             .send()
             .await
-            .context("Failed to send update accession request")?
-            .error_for_status()
-            .context("Server returned error for update accession")?;
+            .context("Failed to send update accession request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for update accession").await?;
 
         response
             .json()
@@ -237,9 +277,11 @@ impl SdaClient {
             .query(&query)
             .send()
             .await
-            .context("Failed to send list subjects request")?
-            .error_for_status()
-            .context("Server returned error for list subjects")?;
+            .context("Failed to send list subjects request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for list subjects").await?;
+
         response
             .json()
             .await
@@ -256,9 +298,11 @@ impl SdaClient {
             .json(&request)
             .send()
             .await
-            .context("Failed to send create subject request")?
-            .error_for_status()
-            .context("Server returned error for create subject")?;
+            .context("Failed to send create subject request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for create subject").await?;
+
         response
             .text()
             .await
@@ -268,15 +312,16 @@ impl SdaClient {
     /// Deletes a metadata subject by its ID.
     pub async fn delete_subject(&self, id: i32, request: DeleteSubjectRequest) -> Result<()> {
         let url = format!("{}/api/v1/metadata-subjects/{}", self.base_url, id);
-        self.client
+        let response = self
+            .client
             .delete(&url)
             .header(self.auth_header().0, self.auth_header().1)
             .json(&request)
             .send()
             .await
-            .context("Failed to send delete subject request")?
-            .error_for_status()
-            .context("Server returned error for delete subject")?;
+            .context("Failed to send delete subject request")?;
+
+        Self::handle_response(response, "Server returned error for delete subject").await?;
         Ok(())
     }
 
@@ -294,14 +339,51 @@ impl SdaClient {
             .json(&request)
             .send()
             .await
-            .context("Failed to send update subject request")?
-            .error_for_status()
-            .context("Server returned error for update subject")?;
+            .context("Failed to send update subject request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for update subject").await?;
 
         response
             .json()
             .await
             .context("Failed to parse update subject response")
+    }
+
+    /// Retrieves a single metadata subject by its ID.
+    pub async fn get_subject(
+        &self,
+        id: i32,
+        lang: MetadataLanguage,
+    ) -> Result<DublinMetadataSubjectResponse> {
+        let url = format!("{}/api/v1/metadata-subjects/{}", self.base_url, id);
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context(format!("Failed to send get subject request for ID {}", id))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for get subject {}", id),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse get subject response")
     }
 
     /// Lists public collections.
@@ -331,9 +413,10 @@ impl SdaClient {
             .query(&query)
             .send()
             .await
-            .context("Failed to send list collections request")?
-            .error_for_status()
-            .context("Server returned error for list collections")?;
+            .context("Failed to send list collections request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for list collections").await?;
 
         response
             .json()
@@ -369,9 +452,13 @@ impl SdaClient {
             .query(&query)
             .send()
             .await
-            .context("Failed to send list private collections request")?
-            .error_for_status()
-            .context("Server returned error for list private collections")?;
+            .context("Failed to send list private collections request")?;
+
+        let response = Self::handle_response(
+            response,
+            "Server returned error for list private collections",
+        )
+        .await?;
 
         response
             .json()
@@ -404,9 +491,13 @@ impl SdaClient {
             .context(format!(
                 "Failed to send get collection request for ID {}",
                 id
-            ))?
-            .error_for_status()
-            .context(format!("Server returned error for get collection {}", id))?;
+            ))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for get collection {}", id),
+        )
+        .await?;
 
         response
             .json()
@@ -424,9 +515,10 @@ impl SdaClient {
             .json(&request)
             .send()
             .await
-            .context("Failed to send create collection request")?
-            .error_for_status()
-            .context("Server returned error for create collection")?;
+            .context("Failed to send create collection request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for create collection").await?;
 
         response
             .text()
@@ -451,12 +543,13 @@ impl SdaClient {
             .context(format!(
                 "Failed to send update collection request for ID {}",
                 id
-            ))?
-            .error_for_status()
-            .context(format!(
-                "Server returned error for update collection {}",
-                id
             ))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for update collection {}", id),
+        )
+        .await?;
 
         response
             .json()

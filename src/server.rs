@@ -6,9 +6,9 @@
 use crate::client::SdaClient;
 use crate::model::{
     CreateAccessionCrawlArgs, CreateCollectionArgs, CreateSubjectArgs, DeleteSubjectArgs,
-    DeleteSubjectRequest, GetCollectionArgs, IdArgs, ListAccessionsArgs, ListCollectionsArgs,
-    ListPrivateCollectionsArgs, ListSubjectsArgs, UpdateAccessionArgs, UpdateCollectionArgs,
-    UpdateSubjectArgs,
+    DeleteSubjectRequest, GetCollectionArgs, GetSubjectArgs, IdArgs, ListAccessionsArgs,
+    ListCollectionsArgs, ListPrivateCollectionsArgs, ListSubjectsArgs, UpdateAccessionArgs,
+    UpdateCollectionArgs, UpdateSubjectArgs,
 };
 use anyhow::{Context, Result};
 use rmcp::{
@@ -176,6 +176,24 @@ impl SdaServer {
             )
             .await
             .context("Failed to list subjects")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    /// Retrieves a single subject by its ID.
+    #[tool(description = "Get a single subject")]
+    async fn get_subject(
+        &self,
+        Parameters(args): Parameters<GetSubjectArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .get_subject(args.id, args.lang)
+            .await
+            .context(format!("Failed to get subject with ID {}", args.id))
             .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(
