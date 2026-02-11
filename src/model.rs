@@ -386,6 +386,16 @@ pub struct GetCollectionArgs {
     pub lang: MetadataLanguage,
 }
 
+/// Arguments for getting a single subject.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct GetSubjectArgs {
+    /// The subject ID.
+    pub id: i32,
+    /// Language for the subject.
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
 /// Arguments for creating a collection.
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct CreateCollectionArgs {
