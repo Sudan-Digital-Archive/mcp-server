@@ -346,7 +346,7 @@ impl SdaServer {
         let request = CreateCollectionRequest {
             lang: args.lang,
             title: args.title,
-            is_public: args.is_public,
+            is_private: args.is_private,
             subject_ids: args.subject_ids,
             description: args.description,
         };
@@ -369,7 +369,7 @@ impl SdaServer {
         let request = UpdateCollectionRequest {
             lang: args.lang,
             title: args.title,
-            is_public: args.is_public,
+            is_private: args.is_private,
             subject_ids: args.subject_ids,
             description: args.description,
         };

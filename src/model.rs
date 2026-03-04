@@ -396,9 +396,9 @@ pub struct ListPrivateCollectionsArgs {
     /// Language filter.
     #[serde(default)]
     pub lang: MetadataLanguage,
-    /// Filter by public status.
+    /// Filter by private status.
     #[serde(default)]
-    pub is_public: bool,
+    pub is_private: bool,
 }
 
 impl Default for ListPrivateCollectionsArgs {
@@ -407,7 +407,7 @@ impl Default for ListPrivateCollectionsArgs {
             page: -1,
             per_page: -1,
             lang: MetadataLanguage::default(),
-            is_public: false,
+            is_private: true,
         }
     }
 }
@@ -439,8 +439,8 @@ pub struct CreateCollectionArgs {
     pub lang: MetadataLanguage,
     /// Title of the collection.
     pub title: String,
-    /// Whether the collection is public.
-    pub is_public: bool,
+    /// Whether the collection is private.
+    pub is_private: bool,
     /// List of subject IDs.
     pub subject_ids: Vec<i32>,
     /// Description of the collection.
@@ -457,8 +457,8 @@ pub struct UpdateCollectionArgs {
     pub lang: MetadataLanguage,
     /// Title of the collection.
     pub title: String,
-    /// Whether the collection is public.
-    pub is_public: bool,
+    /// Whether the collection is private.
+    pub is_private: bool,
     /// List of subject IDs.
     pub subject_ids: Vec<i32>,
     /// Description of the collection.
@@ -473,8 +473,8 @@ pub struct CreateCollectionRequest {
     pub lang: MetadataLanguage,
     /// Title of the collection.
     pub title: String,
-    /// Whether the collection is public.
-    pub is_public: bool,
+    /// Whether the collection is private.
+    pub is_private: bool,
     /// List of subject IDs.
     pub subject_ids: Vec<i32>,
     /// Description of the collection.
@@ -489,8 +489,8 @@ pub struct UpdateCollectionRequest {
     pub lang: MetadataLanguage,
     /// Title of the collection.
     pub title: String,
-    /// Whether the collection is public.
-    pub is_public: bool,
+    /// Whether the collection is private.
+    pub is_private: bool,
     /// List of subject IDs.
     pub subject_ids: Vec<i32>,
     /// Description of the collection.
@@ -505,8 +505,8 @@ pub struct CollectionResponse {
     pub id: i32,
     /// Title of the collection.
     pub title: String,
-    /// Whether the collection is public.
-    pub is_public: bool,
+    /// Whether the collection is private.
+    pub is_private: bool,
     /// Description of the collection.
     pub description: Option<String>,
 }

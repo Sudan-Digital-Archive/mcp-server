@@ -443,7 +443,7 @@ impl SdaClient {
             MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
             MetadataLanguage::None => {}
         }
-        query.push(("is_public", args.is_public.to_string()));
+        query.push(("is_private", args.is_private.to_string()));
 
         let response = self
             .client
@@ -694,7 +694,7 @@ mod tests {
         assert_eq!(args.page, -1);
         assert_eq!(args.per_page, -1);
         assert_eq!(args.lang, MetadataLanguage::None);
-        assert_eq!(args.is_public, false);
+        assert_eq!(args.is_private, true);
     }
 
     #[test]
@@ -702,7 +702,7 @@ mod tests {
         let request = CreateCollectionRequest {
             lang: MetadataLanguage::English,
             title: "Test Collection".to_string(),
-            is_public: true,
+            is_private: true,
             subject_ids: vec![1, 2, 3],
             description: "A test description".to_string(),
         };
