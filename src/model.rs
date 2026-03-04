@@ -49,7 +49,7 @@ pub struct CreateAccessionCrawlArgs {
     pub metadata_language: MetadataLanguage,
     /// Title of the accession.
     pub metadata_title: String,
-    /// Time period related to the accession (ISO 8601).
+    /// Time period related to the accession (ISO 8601, e.g. "2026-02-01T00:00:00" - do NOT include the "Z" suffix).
     pub metadata_time: String,
     /// List of subject IDs.
     pub metadata_subjects: Vec<i32>,
