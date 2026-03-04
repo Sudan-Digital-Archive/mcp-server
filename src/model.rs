@@ -43,8 +43,29 @@ fn default_pagination() -> i64 {
 /// Arguments for creating a new accession (crawl).
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct CreateAccessionCrawlArgs {
-    /// The parameters for creating the accession crawl.
-    pub request: CreateAccessionCrawlRequest,
+    /// The URL to crawl.
+    pub url: String,
+    /// Language of the metadata.
+    pub metadata_language: MetadataLanguage,
+    /// Title of the accession.
+    pub metadata_title: String,
+    /// Time period related to the accession (ISO 8601).
+    pub metadata_time: String,
+    /// List of subject IDs.
+    pub metadata_subjects: Vec<i32>,
+    /// Whether the accession is private.
+    pub is_private: bool,
+    /// Format of the metadata.
+    pub metadata_format: DublinMetadataFormat,
+    /// Optional browser profile for specific sites.
+    #[serde(default)]
+    pub browser_profile: Option<BrowserProfile>,
+    /// Description of the accession.
+    #[serde(default)]
+    pub metadata_description: Option<String>,
+    /// Optional S3 filename.
+    #[serde(default)]
+    pub s3_filename: Option<String>,
 }
 
 /// Arguments for listing accessions.
@@ -126,15 +147,28 @@ pub struct IdArgs {
 pub struct UpdateAccessionArgs {
     /// The ID of the accession to update.
     pub id: i32,
-    /// The updated data.
-    pub request: UpdateAccessionRequest,
+    /// Privacy status.
+    pub is_private: bool,
+    /// Description of the accession.
+    #[serde(default)]
+    pub metadata_description: String,
+    /// Language of the metadata.
+    pub metadata_language: MetadataLanguage,
+    /// List of subject IDs.
+    pub metadata_subjects: Vec<i32>,
+    /// Time period related to the accession.
+    pub metadata_time: String,
+    /// Title of the accession.
+    pub metadata_title: String,
 }
 
 /// Arguments for creating a metadata subject.
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct CreateSubjectArgs {
-    /// The subject data to create.
-    pub request: CreateSubjectRequest,
+    /// Language of the subject.
+    pub lang: MetadataLanguage,
+    /// The subject name/term.
+    pub metadata_subject: String,
 }
 
 /// Arguments for deleting a metadata subject.
@@ -151,8 +185,10 @@ pub struct DeleteSubjectArgs {
 pub struct UpdateSubjectArgs {
     /// The ID of the subject to update.
     pub id: i32,
-    /// The updated subject data.
-    pub request: UpdateSubjectRequest,
+    /// Language of the subject.
+    pub lang: MetadataLanguage,
+    /// The subject name/term.
+    pub metadata_subject: String,
 }
 
 /// Request body for updating an accession.
@@ -386,11 +422,30 @@ pub struct GetCollectionArgs {
     pub lang: MetadataLanguage,
 }
 
+/// Arguments for getting a single subject.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct GetSubjectArgs {
+    /// The subject ID.
+    pub id: i32,
+    /// Language for the subject.
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
 /// Arguments for creating a collection.
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct CreateCollectionArgs {
-    /// The collection data to create.
-    pub request: CreateCollectionRequest,
+    /// Language of the collection.
+    pub lang: MetadataLanguage,
+    /// Title of the collection.
+    pub title: String,
+    /// Whether the collection is public.
+    pub is_public: bool,
+    /// List of subject IDs.
+    pub subject_ids: Vec<i32>,
+    /// Description of the collection.
+    #[serde(default)]
+    pub description: String,
 }
 
 /// Arguments for updating a collection.
@@ -398,8 +453,17 @@ pub struct CreateCollectionArgs {
 pub struct UpdateCollectionArgs {
     /// The ID of the collection to update.
     pub id: i32,
-    /// The updated collection data.
-    pub request: UpdateCollectionRequest,
+    /// Language of the collection.
+    pub lang: MetadataLanguage,
+    /// Title of the collection.
+    pub title: String,
+    /// Whether the collection is public.
+    pub is_public: bool,
+    /// List of subject IDs.
+    pub subject_ids: Vec<i32>,
+    /// Description of the collection.
+    #[serde(default)]
+    pub description: String,
 }
 
 /// Request body for creating a collection.
