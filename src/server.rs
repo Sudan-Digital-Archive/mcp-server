@@ -5,10 +5,12 @@
 
 use crate::client::SdaClient;
 use crate::model::{
-    CreateAccessionCrawlArgs, CreateCollectionArgs, CreateSubjectArgs, DeleteSubjectArgs,
+    CreateAccessionCrawlArgs, CreateAccessionCrawlRequest, CreateCollectionArgs,
+    CreateCollectionRequest, CreateSubjectArgs, CreateSubjectRequest, DeleteSubjectArgs,
     DeleteSubjectRequest, GetCollectionArgs, GetSubjectArgs, IdArgs, ListAccessionsArgs,
     ListCollectionsArgs, ListPrivateCollectionsArgs, ListSubjectsArgs, UpdateAccessionArgs,
-    UpdateCollectionArgs, UpdateSubjectArgs,
+    UpdateAccessionRequest, UpdateCollectionArgs, UpdateCollectionRequest, UpdateSubjectArgs,
+    UpdateSubjectRequest,
 };
 use anyhow::{Context, Result};
 use rmcp::{
@@ -125,9 +127,17 @@ impl SdaServer {
         &self,
         Parameters(args): Parameters<UpdateAccessionArgs>,
     ) -> Result<CallToolResult, McpError> {
+        let request = UpdateAccessionRequest {
+            is_private: args.is_private,
+            metadata_description: args.metadata_description,
+            metadata_language: args.metadata_language,
+            metadata_subjects: args.metadata_subjects,
+            metadata_time: args.metadata_time,
+            metadata_title: args.metadata_title,
+        };
         let response = self
             .client
-            .update_accession(args.id, args.request)
+            .update_accession(args.id, request)
             .await
             .context(format!("Failed to update accession with ID {}", args.id))
             .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
@@ -143,9 +153,21 @@ impl SdaServer {
         &self,
         Parameters(args): Parameters<CreateAccessionCrawlArgs>,
     ) -> Result<CallToolResult, McpError> {
+        let request = CreateAccessionCrawlRequest {
+            url: args.url,
+            metadata_language: args.metadata_language,
+            metadata_title: args.metadata_title,
+            metadata_time: args.metadata_time,
+            metadata_subjects: args.metadata_subjects,
+            is_private: args.is_private,
+            metadata_format: args.metadata_format,
+            browser_profile: args.browser_profile,
+            metadata_description: args.metadata_description,
+            s3_filename: args.s3_filename,
+        };
         let response = self
             .client
-            .create_accession_crawl(args.request)
+            .create_accession_crawl(request)
             .await
             .context("Failed to create accession crawl")
             .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
@@ -207,9 +229,13 @@ impl SdaServer {
         &self,
         Parameters(args): Parameters<CreateSubjectArgs>,
     ) -> Result<CallToolResult, McpError> {
+        let request = CreateSubjectRequest {
+            lang: args.lang,
+            metadata_subject: args.metadata_subject,
+        };
         let response = self
             .client
-            .create_subject(args.request)
+            .create_subject(request)
             .await
             .context("Failed to create subject")
             .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
@@ -241,9 +267,13 @@ impl SdaServer {
         &self,
         Parameters(args): Parameters<UpdateSubjectArgs>,
     ) -> Result<CallToolResult, McpError> {
+        let request = UpdateSubjectRequest {
+            lang: args.lang,
+            metadata_subject: args.metadata_subject,
+        };
         let response = self
             .client
-            .update_subject(args.id, args.request)
+            .update_subject(args.id, request)
             .await
             .context(format!("Failed to update subject with ID {}", args.id))
             .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
@@ -313,9 +343,16 @@ impl SdaServer {
         &self,
         Parameters(args): Parameters<CreateCollectionArgs>,
     ) -> Result<CallToolResult, McpError> {
+        let request = CreateCollectionRequest {
+            lang: args.lang,
+            title: args.title,
+            is_public: args.is_public,
+            subject_ids: args.subject_ids,
+            description: args.description,
+        };
         let response = self
             .client
-            .create_collection(args.request)
+            .create_collection(request)
             .await
             .context("Failed to create collection")
             .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
@@ -329,9 +366,16 @@ impl SdaServer {
         &self,
         Parameters(args): Parameters<UpdateCollectionArgs>,
     ) -> Result<CallToolResult, McpError> {
+        let request = UpdateCollectionRequest {
+            lang: args.lang,
+            title: args.title,
+            is_public: args.is_public,
+            subject_ids: args.subject_ids,
+            description: args.description,
+        };
         let response = self
             .client
-            .update_collection(args.id, args.request)
+            .update_collection(args.id, request)
             .await
             .context(format!("Failed to update collection with ID {}", args.id))
             .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
