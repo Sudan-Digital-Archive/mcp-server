@@ -148,7 +148,9 @@ impl SdaServer {
     }
 
     /// Creates a new accession by crawling a URL.
-    #[tool(description = "Create a new accession (crawl). Note: metadata_time must be in ISO 8601 format without timezone (e.g., '2026-02-01T00:00:00', not '2026-02-01T00:00:00Z')")]
+    #[tool(
+        description = "Create a new accession (crawl). Note: metadata_time must be in ISO 8601 format without timezone (e.g., '2026-02-01T00:00:00', not '2026-02-01T00:00:00Z')"
+    )]
     async fn create_accession_crawl(
         &self,
         Parameters(args): Parameters<CreateAccessionCrawlArgs>,
