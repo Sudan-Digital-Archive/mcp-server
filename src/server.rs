@@ -6,10 +6,20 @@
 use crate::client::SdaClient;
 use crate::model::{
     CreateAccessionCrawlArgs, CreateAccessionCrawlRequest, CreateCollectionArgs,
-    CreateCollectionRequest, CreateSubjectArgs, CreateSubjectRequest, DeleteSubjectArgs,
-    DeleteSubjectRequest, GetCollectionArgs, GetSubjectArgs, IdArgs, ListAccessionsArgs,
-    ListCollectionsArgs, ListPrivateCollectionsArgs, ListSubjectsArgs, UpdateAccessionArgs,
-    UpdateAccessionRequest, UpdateCollectionArgs, UpdateCollectionRequest, UpdateSubjectArgs,
+    CreateCollectionRequest, CreateContributorArgs, CreateContributorRequest,
+    CreateContributorRoleArgs, CreateContributorRoleRequest, CreateCreatorArgs,
+    CreateCreatorRequest, CreateLocationArgs, CreateLocationRequest, CreateRelationArgs,
+    CreateRelationRequest, CreateSubjectArgs, CreateSubjectRequest, DeleteContributorArgs,
+    DeleteContributorRequest, DeleteContributorRoleArgs, DeleteContributorRoleRequest,
+    DeleteCreatorArgs, DeleteCreatorRequest, DeleteLocationArgs, DeleteLocationRequest,
+    DeleteRelationArgs, DeleteSubjectArgs, DeleteSubjectRequest, GetCollectionArgs,
+    GetContributorArgs, GetContributorRoleArgs, GetCreatorArgs, GetLocationArgs, GetRelationArgs,
+    GetSubjectArgs, IdArgs, ListAccessionsArgs, ListCollectionsArgs, ListContributorRolesArgs,
+    ListContributorsArgs, ListCreatorsArgs, ListLocationsArgs, ListPrivateCollectionsArgs,
+    ListRelationsArgs, ListSubjectsArgs, UpdateAccessionArgs, UpdateAccessionRequest,
+    UpdateCollectionArgs, UpdateCollectionRequest, UpdateContributorArgs, UpdateContributorRequest,
+    UpdateContributorRoleArgs, UpdateContributorRoleRequest, UpdateCreatorArgs,
+    UpdateCreatorRequest, UpdateLocationArgs, UpdateLocationRequest, UpdateSubjectArgs,
     UpdateSubjectRequest,
 };
 use anyhow::{Context, Result};
@@ -194,6 +204,11 @@ impl SdaServer {
                 },
                 if args.per_page != -1 {
                     Some(args.per_page)
+                } else {
+                    None
+                },
+                if args.in_collection_id != -1 {
+                    Some(args.in_collection_id)
                 } else {
                     None
                 },
@@ -384,6 +399,512 @@ impl SdaServer {
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "List contributors")]
+    async fn list_contributors(
+        &self,
+        Parameters(args): Parameters<ListContributorsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .list_contributors(
+                args.lang,
+                if args.page != -1 {
+                    Some(args.page)
+                } else {
+                    None
+                },
+                if args.per_page != -1 {
+                    Some(args.per_page)
+                } else {
+                    None
+                },
+                args.query_term,
+            )
+            .await
+            .context("Failed to list contributors")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Get a contributor")]
+    async fn get_contributor(
+        &self,
+        Parameters(args): Parameters<GetContributorArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .get_contributor(args.id, args.lang)
+            .await
+            .context(format!("Failed to get contributor with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Create a contributor")]
+    async fn create_contributor(
+        &self,
+        Parameters(args): Parameters<CreateContributorArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = CreateContributorRequest {
+            lang: args.lang,
+            contributor: args.contributor,
+        };
+        let response = self
+            .client
+            .create_contributor(request)
+            .await
+            .context("Failed to create contributor")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(response)]))
+    }
+
+    #[tool(description = "Update a contributor")]
+    async fn update_contributor(
+        &self,
+        Parameters(args): Parameters<UpdateContributorArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = UpdateContributorRequest {
+            lang: args.lang,
+            contributor: args.contributor,
+        };
+        let response = self
+            .client
+            .update_contributor(args.id, request)
+            .await
+            .context(format!("Failed to update contributor with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Delete a contributor")]
+    async fn delete_contributor(
+        &self,
+        Parameters(args): Parameters<DeleteContributorArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = DeleteContributorRequest { lang: args.lang };
+        self.client
+            .delete_contributor(args.id, request)
+            .await
+            .context(format!("Failed to delete contributor with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            "Contributor deleted successfully".to_string(),
+        )]))
+    }
+
+    #[tool(description = "List contributor roles")]
+    async fn list_contributor_roles(
+        &self,
+        Parameters(args): Parameters<ListContributorRolesArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .list_contributor_roles(
+                args.lang,
+                if args.page != -1 {
+                    Some(args.page)
+                } else {
+                    None
+                },
+                if args.per_page != -1 {
+                    Some(args.per_page)
+                } else {
+                    None
+                },
+                args.query_term,
+            )
+            .await
+            .context("Failed to list contributor roles")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Get a contributor role")]
+    async fn get_contributor_role(
+        &self,
+        Parameters(args): Parameters<GetContributorRoleArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .get_contributor_role(args.id, args.lang)
+            .await
+            .context(format!(
+                "Failed to get contributor role with ID {}",
+                args.id
+            ))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Create a contributor role")]
+    async fn create_contributor_role(
+        &self,
+        Parameters(args): Parameters<CreateContributorRoleArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = CreateContributorRoleRequest {
+            lang: args.lang,
+            role: args.role,
+        };
+        let response = self
+            .client
+            .create_contributor_role(request)
+            .await
+            .context("Failed to create contributor role")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(response)]))
+    }
+
+    #[tool(description = "Update a contributor role")]
+    async fn update_contributor_role(
+        &self,
+        Parameters(args): Parameters<UpdateContributorRoleArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = UpdateContributorRoleRequest {
+            lang: args.lang,
+            role: args.role,
+        };
+        let response = self
+            .client
+            .update_contributor_role(args.id, request)
+            .await
+            .context(format!(
+                "Failed to update contributor role with ID {}",
+                args.id
+            ))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Delete a contributor role")]
+    async fn delete_contributor_role(
+        &self,
+        Parameters(args): Parameters<DeleteContributorRoleArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = DeleteContributorRoleRequest { lang: args.lang };
+        self.client
+            .delete_contributor_role(args.id, request)
+            .await
+            .context(format!(
+                "Failed to delete contributor role with ID {}",
+                args.id
+            ))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            "Contributor role deleted successfully".to_string(),
+        )]))
+    }
+
+    #[tool(description = "List creators")]
+    async fn list_creators(
+        &self,
+        Parameters(args): Parameters<ListCreatorsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .list_creators(
+                args.lang,
+                if args.page != -1 {
+                    Some(args.page)
+                } else {
+                    None
+                },
+                if args.per_page != -1 {
+                    Some(args.per_page)
+                } else {
+                    None
+                },
+                args.query_term,
+            )
+            .await
+            .context("Failed to list creators")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Get a creator")]
+    async fn get_creator(
+        &self,
+        Parameters(args): Parameters<GetCreatorArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .get_creator(args.id, args.lang)
+            .await
+            .context(format!("Failed to get creator with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Create a creator")]
+    async fn create_creator(
+        &self,
+        Parameters(args): Parameters<CreateCreatorArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = CreateCreatorRequest {
+            lang: args.lang,
+            creator: args.creator,
+        };
+        let response = self
+            .client
+            .create_creator(request)
+            .await
+            .context("Failed to create creator")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(response)]))
+    }
+
+    #[tool(description = "Update a creator")]
+    async fn update_creator(
+        &self,
+        Parameters(args): Parameters<UpdateCreatorArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = UpdateCreatorRequest {
+            lang: args.lang,
+            creator: args.creator,
+        };
+        let response = self
+            .client
+            .update_creator(args.id, request)
+            .await
+            .context(format!("Failed to update creator with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Delete a creator")]
+    async fn delete_creator(
+        &self,
+        Parameters(args): Parameters<DeleteCreatorArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = DeleteCreatorRequest { lang: args.lang };
+        self.client
+            .delete_creator(args.id, request)
+            .await
+            .context(format!("Failed to delete creator with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            "Creator deleted successfully".to_string(),
+        )]))
+    }
+
+    #[tool(description = "List locations")]
+    async fn list_locations(
+        &self,
+        Parameters(args): Parameters<ListLocationsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .list_locations(
+                args.lang,
+                if args.page != -1 {
+                    Some(args.page)
+                } else {
+                    None
+                },
+                if args.per_page != -1 {
+                    Some(args.per_page)
+                } else {
+                    None
+                },
+                args.query_term,
+            )
+            .await
+            .context("Failed to list locations")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Get a location")]
+    async fn get_location(
+        &self,
+        Parameters(args): Parameters<GetLocationArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .get_location(args.id, args.lang)
+            .await
+            .context(format!("Failed to get location with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Create a location")]
+    async fn create_location(
+        &self,
+        Parameters(args): Parameters<CreateLocationArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = CreateLocationRequest {
+            lang: args.lang,
+            location: args.location,
+        };
+        let response = self
+            .client
+            .create_location(request)
+            .await
+            .context("Failed to create location")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(response)]))
+    }
+
+    #[tool(description = "Update a location")]
+    async fn update_location(
+        &self,
+        Parameters(args): Parameters<UpdateLocationArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = UpdateLocationRequest {
+            lang: args.lang,
+            location: args.location,
+        };
+        let response = self
+            .client
+            .update_location(args.id, request)
+            .await
+            .context(format!("Failed to update location with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Delete a location")]
+    async fn delete_location(
+        &self,
+        Parameters(args): Parameters<DeleteLocationArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = DeleteLocationRequest { lang: args.lang };
+        self.client
+            .delete_location(args.id, request)
+            .await
+            .context(format!("Failed to delete location with ID {}", args.id))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            "Location deleted successfully".to_string(),
+        )]))
+    }
+
+    #[tool(description = "List relations for an accession")]
+    async fn list_relations(
+        &self,
+        Parameters(args): Parameters<ListRelationsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .list_relations(args.accession_id, args.lang)
+            .await
+            .context(format!(
+                "Failed to list relations for accession {}",
+                args.accession_id
+            ))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Get a relation")]
+    async fn get_relation(
+        &self,
+        Parameters(args): Parameters<GetRelationArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .get_relation(args.accession_id, args.relation_id, args.lang)
+            .await
+            .context(format!(
+                "Failed to get relation {} for accession {}",
+                args.relation_id, args.accession_id
+            ))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Create a relation")]
+    async fn create_relation(
+        &self,
+        Parameters(args): Parameters<CreateRelationArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let request = CreateRelationRequest {
+            related_accession_id: args.related_accession_id,
+            relation_type: args.relation_type,
+        };
+        let response = self
+            .client
+            .create_relation(args.accession_id, request)
+            .await
+            .context(format!(
+                "Failed to create relation for accession {}",
+                args.accession_id
+            ))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(response)]))
+    }
+
+    #[tool(description = "Delete a relation")]
+    async fn delete_relation(
+        &self,
+        Parameters(args): Parameters<DeleteRelationArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        self.client
+            .delete_relation(args.accession_id, args.relation_id, args.lang)
+            .await
+            .context(format!(
+                "Failed to delete relation {} for accession {}",
+                args.relation_id, args.accession_id
+            ))
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            "Relation deleted successfully".to_string(),
         )]))
     }
 }
