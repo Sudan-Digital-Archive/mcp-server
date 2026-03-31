@@ -40,6 +40,11 @@ fn default_pagination() -> i64 {
     -1
 }
 
+/// Default value for collection ID filter.
+fn default_collection_id() -> i32 {
+    -1
+}
+
 /// Arguments for creating a new accession (crawl).
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct CreateAccessionCrawlArgs {
@@ -133,6 +138,9 @@ pub struct ListSubjectsArgs {
     pub per_page: i64,
     /// Language for subjects - REQUIRED field.
     pub lang: MetadataLanguage,
+    /// Filter subjects by collection ID.
+    #[serde(default = "default_collection_id")]
+    pub in_collection_id: i32,
 }
 
 /// Simple arguments containing only an ID.
@@ -522,4 +530,396 @@ pub struct ListCollectionsResponse {
     pub page: i64,
     /// Items per page.
     pub per_page: i64,
+}
+
+/// Relation types for accession relations.
+#[derive(Debug, Serialize, Deserialize, JsonSchema, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum DublinMetadataRelationType {
+    HasPart,
+    IsPartOf,
+    HasVersion,
+    IsVersionOf,
+    References,
+    IsReferencedBy,
+    ConformsTo,
+    Requires,
+}
+
+/// Arguments for listing contributors.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ListContributorsArgs {
+    #[serde(default = "default_pagination")]
+    pub page: i64,
+    #[serde(default = "default_pagination", alias = "per_page")]
+    pub per_page: i64,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+    #[serde(default)]
+    pub query_term: String,
+}
+
+/// Arguments for getting a single contributor.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct GetContributorArgs {
+    pub id: i32,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
+/// Arguments for creating a contributor.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateContributorArgs {
+    pub lang: MetadataLanguage,
+    pub contributor: String,
+}
+
+/// Arguments for updating a contributor.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateContributorArgs {
+    pub id: i32,
+    pub lang: MetadataLanguage,
+    pub contributor: String,
+}
+
+/// Arguments for deleting a contributor.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DeleteContributorArgs {
+    pub id: i32,
+    pub lang: MetadataLanguage,
+}
+
+/// Request body for creating a contributor.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateContributorRequest {
+    pub lang: MetadataLanguage,
+    pub contributor: String,
+}
+
+/// Request body for updating a contributor.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateContributorRequest {
+    pub lang: MetadataLanguage,
+    pub contributor: String,
+}
+
+/// Request body for deleting a contributor.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DeleteContributorRequest {
+    pub lang: MetadataLanguage,
+}
+
+/// Response containing a single contributor.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct ContributorResponse {
+    pub id: i32,
+    pub contributor: String,
+}
+
+/// Response containing a list of contributors.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct ListContributorsResponse {
+    pub items: Vec<ContributorResponse>,
+    pub num_pages: i64,
+    pub page: i64,
+    pub per_page: i64,
+}
+
+/// Arguments for listing contributor roles.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ListContributorRolesArgs {
+    #[serde(default = "default_pagination")]
+    pub page: i64,
+    #[serde(default = "default_pagination", alias = "per_page")]
+    pub per_page: i64,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+    #[serde(default)]
+    pub query_term: String,
+}
+
+/// Arguments for getting a single contributor role.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct GetContributorRoleArgs {
+    pub id: i32,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
+/// Arguments for creating a contributor role.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateContributorRoleArgs {
+    pub lang: MetadataLanguage,
+    pub role: String,
+}
+
+/// Arguments for updating a contributor role.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateContributorRoleArgs {
+    pub id: i32,
+    pub lang: MetadataLanguage,
+    pub role: String,
+}
+
+/// Arguments for deleting a contributor role.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DeleteContributorRoleArgs {
+    pub id: i32,
+    pub lang: MetadataLanguage,
+}
+
+/// Request body for creating a contributor role.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateContributorRoleRequest {
+    pub lang: MetadataLanguage,
+    pub role: String,
+}
+
+/// Request body for updating a contributor role.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateContributorRoleRequest {
+    pub lang: MetadataLanguage,
+    pub role: String,
+}
+
+/// Request body for deleting a contributor role.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DeleteContributorRoleRequest {
+    pub lang: MetadataLanguage,
+}
+
+/// Response containing a single contributor role.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct ContributorRoleResponse {
+    pub id: i32,
+    pub role: String,
+}
+
+/// Response containing a list of contributor roles.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct ListContributorRolesResponse {
+    pub items: Vec<ContributorRoleResponse>,
+    pub num_pages: i64,
+    pub page: i64,
+    pub per_page: i64,
+}
+
+/// Arguments for listing creators.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ListCreatorsArgs {
+    #[serde(default = "default_pagination")]
+    pub page: i64,
+    #[serde(default = "default_pagination", alias = "per_page")]
+    pub per_page: i64,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+    #[serde(default)]
+    pub query_term: String,
+}
+
+/// Arguments for getting a single creator.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct GetCreatorArgs {
+    pub id: i32,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
+/// Arguments for creating a creator.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateCreatorArgs {
+    pub lang: MetadataLanguage,
+    pub creator: String,
+}
+
+/// Arguments for updating a creator.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateCreatorArgs {
+    pub id: i32,
+    pub lang: MetadataLanguage,
+    pub creator: String,
+}
+
+/// Arguments for deleting a creator.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DeleteCreatorArgs {
+    pub id: i32,
+    pub lang: MetadataLanguage,
+}
+
+/// Request body for creating a creator.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateCreatorRequest {
+    pub lang: MetadataLanguage,
+    pub creator: String,
+}
+
+/// Request body for updating a creator.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateCreatorRequest {
+    pub lang: MetadataLanguage,
+    pub creator: String,
+}
+
+/// Request body for deleting a creator.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DeleteCreatorRequest {
+    pub lang: MetadataLanguage,
+}
+
+/// Response containing a single creator.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreatorResponse {
+    pub id: i32,
+    pub creator: String,
+}
+
+/// Response containing a list of creators.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct ListCreatorsResponse {
+    pub items: Vec<CreatorResponse>,
+    pub num_pages: i64,
+    pub page: i64,
+    pub per_page: i64,
+}
+
+/// Arguments for listing locations.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ListLocationsArgs {
+    #[serde(default = "default_pagination")]
+    pub page: i64,
+    #[serde(default = "default_pagination", alias = "per_page")]
+    pub per_page: i64,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+    #[serde(default)]
+    pub query_term: String,
+}
+
+/// Arguments for getting a single location.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct GetLocationArgs {
+    pub id: i32,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
+/// Arguments for creating a location.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateLocationArgs {
+    pub lang: MetadataLanguage,
+    pub location: String,
+}
+
+/// Arguments for updating a location.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateLocationArgs {
+    pub id: i32,
+    pub lang: MetadataLanguage,
+    pub location: String,
+}
+
+/// Arguments for deleting a location.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DeleteLocationArgs {
+    pub id: i32,
+    pub lang: MetadataLanguage,
+}
+
+/// Request body for creating a location.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateLocationRequest {
+    pub lang: MetadataLanguage,
+    pub location: String,
+}
+
+/// Request body for updating a location.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct UpdateLocationRequest {
+    pub lang: MetadataLanguage,
+    pub location: String,
+}
+
+/// Request body for deleting a location.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DeleteLocationRequest {
+    pub lang: MetadataLanguage,
+}
+
+/// Response containing a single location.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct LocationResponse {
+    pub id: i32,
+    pub location: String,
+}
+
+/// Response containing a list of locations.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct ListLocationsResponse {
+    pub items: Vec<LocationResponse>,
+    pub num_pages: i64,
+    pub page: i64,
+    pub per_page: i64,
+}
+
+/// Arguments for listing relations.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ListRelationsArgs {
+    pub accession_id: i32,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
+/// Arguments for getting a single relation.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct GetRelationArgs {
+    pub accession_id: i32,
+    pub relation_id: i32,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
+/// Arguments for creating a relation.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateRelationArgs {
+    pub accession_id: i32,
+    pub related_accession_id: i32,
+    pub relation_type: DublinMetadataRelationType,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
+/// Arguments for deleting a relation.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DeleteRelationArgs {
+    pub accession_id: i32,
+    pub relation_id: i32,
+    #[serde(default)]
+    pub lang: MetadataLanguage,
+}
+
+/// Request body for creating a relation.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateRelationRequest {
+    pub related_accession_id: i32,
+    pub relation_type: DublinMetadataRelationType,
+}
+
+/// Response containing a single relation.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct RelationResponse {
+    pub id: i32,
+    pub related_accession_id: i32,
+    pub relation_type: String,
+}
+
+/// Response containing a list of relations.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct ListRelationsResponse {
+    pub items: Vec<RelationResponse>,
 }

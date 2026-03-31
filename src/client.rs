@@ -252,6 +252,7 @@ impl SdaClient {
         lang: MetadataLanguage,
         page: Option<i64>,
         per_page: Option<i64>,
+        in_collection_id: Option<i32>,
     ) -> Result<ListSubjectsResponse> {
         let url = format!("{}/api/v1/metadata-subjects", self.base_url);
         let mut query = vec![];
@@ -268,6 +269,11 @@ impl SdaClient {
         }
         if let Some(pp) = per_page {
             query.push(("per_page", pp.to_string()));
+        }
+        if let Some(cid) = in_collection_id
+            && cid != -1
+        {
+            query.push(("in_collection_id", cid.to_string()));
         }
 
         let response = self
@@ -555,6 +561,789 @@ impl SdaClient {
             .json()
             .await
             .context("Failed to parse update collection response")
+    }
+
+    /// Lists contributors.
+    pub async fn list_contributors(
+        &self,
+        lang: MetadataLanguage,
+        page: Option<i64>,
+        per_page: Option<i64>,
+        query_term: String,
+    ) -> Result<ListContributorsResponse> {
+        let url = format!("{}/api/v1/contributors", self.base_url);
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+        if let Some(p) = page {
+            query.push(("page", p.to_string()));
+        }
+        if let Some(pp) = per_page {
+            query.push(("per_page", pp.to_string()));
+        }
+        if !query_term.is_empty() {
+            query.push(("query_term", query_term));
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context("Failed to send list contributors request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for list contributors").await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse list contributors response")
+    }
+
+    /// Gets a single contributor by ID.
+    pub async fn get_contributor(
+        &self,
+        id: i32,
+        lang: MetadataLanguage,
+    ) -> Result<ContributorResponse> {
+        let url = format!("{}/api/v1/contributors/{}", self.base_url, id);
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send get contributor request for ID {}",
+                id
+            ))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for get contributor {}", id),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse get contributor response")
+    }
+
+    /// Creates a new contributor.
+    pub async fn create_contributor(&self, request: CreateContributorRequest) -> Result<String> {
+        let url = format!("{}/api/v1/contributors", self.base_url);
+        let response = self
+            .client
+            .post(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context("Failed to send create contributor request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for create contributor").await?;
+
+        response
+            .text()
+            .await
+            .context("Failed to parse create contributor response text")
+    }
+
+    /// Updates a contributor.
+    pub async fn update_contributor(
+        &self,
+        id: i32,
+        request: UpdateContributorRequest,
+    ) -> Result<ContributorResponse> {
+        let url = format!("{}/api/v1/contributors/{}", self.base_url, id);
+        let response = self
+            .client
+            .put(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send update contributor request for ID {}",
+                id
+            ))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for update contributor {}", id),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse update contributor response")
+    }
+
+    /// Deletes a contributor.
+    pub async fn delete_contributor(
+        &self,
+        id: i32,
+        request: DeleteContributorRequest,
+    ) -> Result<()> {
+        let url = format!("{}/api/v1/contributors/{}", self.base_url, id);
+        let response = self
+            .client
+            .delete(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send delete contributor request for ID {}",
+                id
+            ))?;
+
+        Self::handle_response(response, "Server returned error for delete contributor").await?;
+        Ok(())
+    }
+
+    /// Lists contributor roles.
+    pub async fn list_contributor_roles(
+        &self,
+        lang: MetadataLanguage,
+        page: Option<i64>,
+        per_page: Option<i64>,
+        query_term: String,
+    ) -> Result<ListContributorRolesResponse> {
+        let url = format!("{}/api/v1/contributors/roles", self.base_url);
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+        if let Some(p) = page {
+            query.push(("page", p.to_string()));
+        }
+        if let Some(pp) = per_page {
+            query.push(("per_page", pp.to_string()));
+        }
+        if !query_term.is_empty() {
+            query.push(("query_term", query_term));
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context("Failed to send list contributor roles request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for list contributor roles")
+                .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse list contributor roles response")
+    }
+
+    /// Gets a single contributor role by ID.
+    pub async fn get_contributor_role(
+        &self,
+        id: i32,
+        lang: MetadataLanguage,
+    ) -> Result<ContributorRoleResponse> {
+        let url = format!("{}/api/v1/contributors/roles/{}", self.base_url, id);
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send get contributor role request for ID {}",
+                id
+            ))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for get contributor role {}", id),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse get contributor role response")
+    }
+
+    /// Creates a new contributor role.
+    pub async fn create_contributor_role(
+        &self,
+        request: CreateContributorRoleRequest,
+    ) -> Result<String> {
+        let url = format!("{}/api/v1/contributors/roles", self.base_url);
+        let response = self
+            .client
+            .post(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context("Failed to send create contributor role request")?;
+
+        let response = Self::handle_response(
+            response,
+            "Server returned error for create contributor role",
+        )
+        .await?;
+
+        response
+            .text()
+            .await
+            .context("Failed to parse create contributor role response text")
+    }
+
+    /// Updates a contributor role.
+    pub async fn update_contributor_role(
+        &self,
+        id: i32,
+        request: UpdateContributorRoleRequest,
+    ) -> Result<ContributorRoleResponse> {
+        let url = format!("{}/api/v1/contributors/roles/{}", self.base_url, id);
+        let response = self
+            .client
+            .put(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send update contributor role request for ID {}",
+                id
+            ))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for update contributor role {}", id),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse update contributor role response")
+    }
+
+    /// Deletes a contributor role.
+    pub async fn delete_contributor_role(
+        &self,
+        id: i32,
+        request: DeleteContributorRoleRequest,
+    ) -> Result<()> {
+        let url = format!("{}/api/v1/contributors/roles/{}", self.base_url, id);
+        let response = self
+            .client
+            .delete(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send delete contributor role request for ID {}",
+                id
+            ))?;
+
+        Self::handle_response(
+            response,
+            "Server returned error for delete contributor role",
+        )
+        .await?;
+        Ok(())
+    }
+
+    /// Lists creators.
+    pub async fn list_creators(
+        &self,
+        lang: MetadataLanguage,
+        page: Option<i64>,
+        per_page: Option<i64>,
+        query_term: String,
+    ) -> Result<ListCreatorsResponse> {
+        let url = format!("{}/api/v1/creators", self.base_url);
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+        if let Some(p) = page {
+            query.push(("page", p.to_string()));
+        }
+        if let Some(pp) = per_page {
+            query.push(("per_page", pp.to_string()));
+        }
+        if !query_term.is_empty() {
+            query.push(("query_term", query_term));
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context("Failed to send list creators request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for list creators").await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse list creators response")
+    }
+
+    /// Gets a single creator by ID.
+    pub async fn get_creator(&self, id: i32, lang: MetadataLanguage) -> Result<CreatorResponse> {
+        let url = format!("{}/api/v1/creators/{}", self.base_url, id);
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context(format!("Failed to send get creator request for ID {}", id))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for get creator {}", id),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse get creator response")
+    }
+
+    /// Creates a new creator.
+    pub async fn create_creator(&self, request: CreateCreatorRequest) -> Result<String> {
+        let url = format!("{}/api/v1/creators", self.base_url);
+        let response = self
+            .client
+            .post(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context("Failed to send create creator request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for create creator").await?;
+
+        response
+            .text()
+            .await
+            .context("Failed to parse create creator response text")
+    }
+
+    /// Updates a creator.
+    pub async fn update_creator(
+        &self,
+        id: i32,
+        request: UpdateCreatorRequest,
+    ) -> Result<CreatorResponse> {
+        let url = format!("{}/api/v1/creators/{}", self.base_url, id);
+        let response = self
+            .client
+            .put(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send update creator request for ID {}",
+                id
+            ))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for update creator {}", id),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse update creator response")
+    }
+
+    /// Deletes a creator.
+    pub async fn delete_creator(&self, id: i32, request: DeleteCreatorRequest) -> Result<()> {
+        let url = format!("{}/api/v1/creators/{}", self.base_url, id);
+        let response = self
+            .client
+            .delete(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send delete creator request for ID {}",
+                id
+            ))?;
+
+        Self::handle_response(response, "Server returned error for delete creator").await?;
+        Ok(())
+    }
+
+    /// Lists locations.
+    pub async fn list_locations(
+        &self,
+        lang: MetadataLanguage,
+        page: Option<i64>,
+        per_page: Option<i64>,
+        query_term: String,
+    ) -> Result<ListLocationsResponse> {
+        let url = format!("{}/api/v1/locations", self.base_url);
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+        if let Some(p) = page {
+            query.push(("page", p.to_string()));
+        }
+        if let Some(pp) = per_page {
+            query.push(("per_page", pp.to_string()));
+        }
+        if !query_term.is_empty() {
+            query.push(("query_term", query_term));
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context("Failed to send list locations request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for list locations").await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse list locations response")
+    }
+
+    /// Gets a single location by ID.
+    pub async fn get_location(&self, id: i32, lang: MetadataLanguage) -> Result<LocationResponse> {
+        let url = format!("{}/api/v1/locations/{}", self.base_url, id);
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context(format!("Failed to send get location request for ID {}", id))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for get location {}", id),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse get location response")
+    }
+
+    /// Creates a new location.
+    pub async fn create_location(&self, request: CreateLocationRequest) -> Result<String> {
+        let url = format!("{}/api/v1/locations", self.base_url);
+        let response = self
+            .client
+            .post(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context("Failed to send create location request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for create location").await?;
+
+        response
+            .text()
+            .await
+            .context("Failed to parse create location response text")
+    }
+
+    /// Updates a location.
+    pub async fn update_location(
+        &self,
+        id: i32,
+        request: UpdateLocationRequest,
+    ) -> Result<LocationResponse> {
+        let url = format!("{}/api/v1/locations/{}", self.base_url, id);
+        let response = self
+            .client
+            .put(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send update location request for ID {}",
+                id
+            ))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for update location {}", id),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse update location response")
+    }
+
+    /// Deletes a location.
+    pub async fn delete_location(&self, id: i32, request: DeleteLocationRequest) -> Result<()> {
+        let url = format!("{}/api/v1/locations/{}", self.base_url, id);
+        let response = self
+            .client
+            .delete(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send delete location request for ID {}",
+                id
+            ))?;
+
+        Self::handle_response(response, "Server returned error for delete location").await?;
+        Ok(())
+    }
+
+    /// Lists relations for an accession.
+    pub async fn list_relations(
+        &self,
+        accession_id: i32,
+        lang: MetadataLanguage,
+    ) -> Result<ListRelationsResponse> {
+        let url = format!(
+            "{}/api/v1/accessions/{}/relation",
+            self.base_url, accession_id
+        );
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send list relations request for accession {}",
+                accession_id
+            ))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!("Server returned error for list relations {}", accession_id),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse list relations response")
+    }
+
+    /// Gets a single relation by ID.
+    pub async fn get_relation(
+        &self,
+        accession_id: i32,
+        relation_id: i32,
+        lang: MetadataLanguage,
+    ) -> Result<RelationResponse> {
+        let url = format!(
+            "{}/api/v1/accessions/{}/relation/{}",
+            self.base_url, accession_id, relation_id
+        );
+        let mut query = vec![];
+
+        match lang {
+            MetadataLanguage::English => query.push(("lang", "english".to_string())),
+            MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
+            MetadataLanguage::None => {}
+        }
+
+        let response = self
+            .client
+            .get(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send get relation request for accession {} relation {}",
+                accession_id, relation_id
+            ))?;
+
+        let response = Self::handle_response(
+            response,
+            &format!(
+                "Server returned error for get relation {} from accession {}",
+                relation_id, accession_id
+            ),
+        )
+        .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse get relation response")
+    }
+
+    /// Creates a new relation.
+    pub async fn create_relation(
+        &self,
+        accession_id: i32,
+        request: CreateRelationRequest,
+    ) -> Result<String> {
+        let url = format!(
+            "{}/api/v1/accessions/{}/relation",
+            self.base_url, accession_id
+        );
+        let response = self
+            .client
+            .post(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send create relation request for accession {}",
+                accession_id
+            ))?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for create relation").await?;
+
+        response
+            .text()
+            .await
+            .context("Failed to parse create relation response text")
+    }
+
+    /// Deletes a relation.
+    pub async fn delete_relation(
+        &self,
+        accession_id: i32,
+        relation_id: i32,
+        lang: MetadataLanguage,
+    ) -> Result<()> {
+        let url = format!(
+            "{}/api/v1/accessions/{}/relation/{}",
+            self.base_url, accession_id, relation_id
+        );
+        let query = vec![(
+            "lang",
+            match lang {
+                MetadataLanguage::English => "english",
+                MetadataLanguage::Arabic => "arabic",
+                MetadataLanguage::None => "english",
+            },
+        )];
+
+        let response = self
+            .client
+            .delete(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .query(&query)
+            .send()
+            .await
+            .context(format!(
+                "Failed to send delete relation request for accession {} relation {}",
+                accession_id, relation_id
+            ))?;
+
+        Self::handle_response(
+            response,
+            &format!(
+                "Server returned error for delete relation {} from accession {}",
+                relation_id, accession_id
+            ),
+        )
+        .await?;
+        Ok(())
     }
 }
 
