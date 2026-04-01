@@ -45,6 +45,11 @@ fn default_collection_id() -> i32 {
     -1
 }
 
+/// Default value for ID fields (unset).
+fn default_id() -> i64 {
+    -1
+}
+
 /// Arguments for creating a new accession (crawl).
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct CreateAccessionCrawlArgs {
@@ -71,6 +76,33 @@ pub struct CreateAccessionCrawlArgs {
     /// Optional S3 filename.
     #[serde(default)]
     pub s3_filename: Option<String>,
+    /// List of contributor IDs (Arabic).
+    #[serde(default)]
+    pub metadata_contributor_ar_ids: Vec<i32>,
+    /// List of contributor IDs (English).
+    #[serde(default)]
+    pub metadata_contributor_en_ids: Vec<i32>,
+    /// List of contributor role IDs (Arabic) - must be 1:1 with contributors.
+    #[serde(default)]
+    pub metadata_contributor_role_ar_ids: Vec<Option<i32>>,
+    /// List of contributor role IDs (English) - must be 1:1 with contributors.
+    #[serde(default)]
+    pub metadata_contributor_role_en_ids: Vec<Option<i32>>,
+    /// Creator ID (Arabic).
+    #[serde(default = "default_id")]
+    pub metadata_creator_ar_id: i64,
+    /// Creator ID (English).
+    #[serde(default = "default_id")]
+    pub metadata_creator_en_id: i64,
+    /// Location ID (Arabic).
+    #[serde(default = "default_id")]
+    pub metadata_location_ar_id: i64,
+    /// Location ID (English).
+    #[serde(default = "default_id")]
+    pub metadata_location_en_id: i64,
+    /// Whether to send email notification after crawl completes.
+    #[serde(default)]
+    pub send_email_notification: bool,
 }
 
 /// Arguments for listing accessions.
@@ -168,6 +200,30 @@ pub struct UpdateAccessionArgs {
     pub metadata_time: String,
     /// Title of the accession.
     pub metadata_title: String,
+    /// List of contributor IDs (Arabic).
+    #[serde(default)]
+    pub metadata_contributor_ar_ids: Vec<i32>,
+    /// List of contributor IDs (English).
+    #[serde(default)]
+    pub metadata_contributor_en_ids: Vec<i32>,
+    /// List of contributor role IDs (Arabic) - must be 1:1 with contributors.
+    #[serde(default)]
+    pub metadata_contributor_role_ar_ids: Vec<Option<i32>>,
+    /// List of contributor role IDs (English) - must be 1:1 with contributors.
+    #[serde(default)]
+    pub metadata_contributor_role_en_ids: Vec<Option<i32>>,
+    /// Creator ID (Arabic).
+    #[serde(default = "default_id")]
+    pub metadata_creator_ar_id: i64,
+    /// Creator ID (English).
+    #[serde(default = "default_id")]
+    pub metadata_creator_en_id: i64,
+    /// Location ID (Arabic).
+    #[serde(default = "default_id")]
+    pub metadata_location_ar_id: i64,
+    /// Location ID (English).
+    #[serde(default = "default_id")]
+    pub metadata_location_en_id: i64,
 }
 
 /// Arguments for creating a metadata subject.
@@ -215,6 +271,26 @@ pub struct UpdateAccessionRequest {
     pub metadata_time: String,
     /// Title of the accession.
     pub metadata_title: String,
+    /// List of contributor IDs (Arabic).
+    #[serde(default)]
+    pub metadata_contributor_ar_ids: Vec<i32>,
+    /// List of contributor IDs (English).
+    #[serde(default)]
+    pub metadata_contributor_en_ids: Vec<i32>,
+    /// List of contributor role IDs (Arabic) - must be 1:1 with contributors.
+    #[serde(default)]
+    pub metadata_contributor_role_ar_ids: Vec<Option<i32>>,
+    /// List of contributor role IDs (English) - must be 1:1 with contributors.
+    #[serde(default)]
+    pub metadata_contributor_role_en_ids: Vec<Option<i32>>,
+    /// Creator ID (Arabic).
+    pub metadata_creator_ar_id: Option<i64>,
+    /// Creator ID (English).
+    pub metadata_creator_en_id: Option<i64>,
+    /// Location ID (Arabic).
+    pub metadata_location_ar_id: Option<i64>,
+    /// Location ID (English).
+    pub metadata_location_en_id: Option<i64>,
 }
 
 /// Request body for creating a metadata subject.
@@ -268,6 +344,29 @@ pub struct CreateAccessionCrawlRequest {
     /// Optional S3 filename.
     #[serde(default)]
     pub s3_filename: Option<String>,
+    /// List of contributor IDs (Arabic).
+    #[serde(default)]
+    pub metadata_contributor_ar_ids: Vec<i32>,
+    /// List of contributor IDs (English).
+    #[serde(default)]
+    pub metadata_contributor_en_ids: Vec<i32>,
+    /// List of contributor role IDs (Arabic) - must be 1:1 with contributors.
+    #[serde(default)]
+    pub metadata_contributor_role_ar_ids: Vec<Option<i32>>,
+    /// List of contributor role IDs (English) - must be 1:1 with contributors.
+    #[serde(default)]
+    pub metadata_contributor_role_en_ids: Vec<Option<i32>>,
+    /// Creator ID (Arabic).
+    pub metadata_creator_ar_id: Option<i64>,
+    /// Creator ID (English).
+    pub metadata_creator_en_id: Option<i64>,
+    /// Location ID (Arabic).
+    pub metadata_location_ar_id: Option<i64>,
+    /// Location ID (English).
+    pub metadata_location_en_id: Option<i64>,
+    /// Whether to send email notification after crawl completes.
+    #[serde(default)]
+    pub send_email_notification: bool,
 }
 
 /// Status of a web crawl.

@@ -46,6 +46,13 @@ pub struct SdaServer {
     tool_router: ToolRouter<SdaServer>,
 }
 
+/// Converts a default ID value (-1) to None for API requests.
+/// MCP clients pass -1 to indicate "not set", but the API expects null.
+#[allow(dead_code)]
+fn opt_id(id: i64) -> Option<i64> {
+    if id == -1 { None } else { Some(id) }
+}
+
 #[tool_router]
 impl SdaServer {
     /// Creates a new instance of the `SdaServer`.
@@ -132,11 +139,14 @@ impl SdaServer {
     }
 
     /// Updates an existing accession.
-    #[tool(description = "Update an accession")]
+    #[tool(
+        description = "Update an accession. Note: contributor_role_ids must be 1:1 with contributor_ids (same length)."
+    )]
     async fn update_accession(
         &self,
         Parameters(args): Parameters<UpdateAccessionArgs>,
     ) -> Result<CallToolResult, McpError> {
+        let opt_id = |id: i64| if id == -1 { None } else { Some(id) };
         let request = UpdateAccessionRequest {
             is_private: args.is_private,
             metadata_description: args.metadata_description,
@@ -144,6 +154,14 @@ impl SdaServer {
             metadata_subjects: args.metadata_subjects,
             metadata_time: args.metadata_time,
             metadata_title: args.metadata_title,
+            metadata_contributor_ar_ids: args.metadata_contributor_ar_ids,
+            metadata_contributor_en_ids: args.metadata_contributor_en_ids,
+            metadata_contributor_role_ar_ids: args.metadata_contributor_role_ar_ids,
+            metadata_contributor_role_en_ids: args.metadata_contributor_role_en_ids,
+            metadata_creator_ar_id: opt_id(args.metadata_creator_ar_id),
+            metadata_creator_en_id: opt_id(args.metadata_creator_en_id),
+            metadata_location_ar_id: opt_id(args.metadata_location_ar_id),
+            metadata_location_en_id: opt_id(args.metadata_location_en_id),
         };
         let response = self
             .client
@@ -159,12 +177,13 @@ impl SdaServer {
 
     /// Creates a new accession by crawling a URL.
     #[tool(
-        description = "Create a new accession (crawl). Note: metadata_time must be in ISO 8601 format without timezone (e.g., '2026-02-01T00:00:00', not '2026-02-01T00:00:00Z')"
+        description = "Create a new accession (crawl). Note: metadata_time must be in ISO 8601 format without timezone (e.g., '2026-02-01T00:00:00', not '2026-02-01T00:00:00Z'). Contributor role IDs must be 1:1 with contributor IDs (same length)."
     )]
     async fn create_accession_crawl(
         &self,
         Parameters(args): Parameters<CreateAccessionCrawlArgs>,
     ) -> Result<CallToolResult, McpError> {
+        let opt_id = |id: i64| if id == -1 { None } else { Some(id) };
         let request = CreateAccessionCrawlRequest {
             url: args.url,
             metadata_language: args.metadata_language,
@@ -176,6 +195,15 @@ impl SdaServer {
             browser_profile: args.browser_profile,
             metadata_description: args.metadata_description,
             s3_filename: args.s3_filename,
+            metadata_contributor_ar_ids: args.metadata_contributor_ar_ids,
+            metadata_contributor_en_ids: args.metadata_contributor_en_ids,
+            metadata_contributor_role_ar_ids: args.metadata_contributor_role_ar_ids,
+            metadata_contributor_role_en_ids: args.metadata_contributor_role_en_ids,
+            metadata_creator_ar_id: opt_id(args.metadata_creator_ar_id),
+            metadata_creator_en_id: opt_id(args.metadata_creator_en_id),
+            metadata_location_ar_id: opt_id(args.metadata_location_ar_id),
+            metadata_location_en_id: opt_id(args.metadata_location_en_id),
+            send_email_notification: args.send_email_notification,
         };
         let response = self
             .client
@@ -931,5 +959,34 @@ impl ServerHandler for SdaServer {
         _context: RequestContext<RoleServer>,
     ) -> Result<InitializeResult, McpError> {
         Ok(self.get_info())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_opt_id_returns_none_for_minus_one() {
+        let result = opt_id(-1);
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_opt_id_returns_some_for_positive_id() {
+        let result = opt_id(123);
+        assert_eq!(result, Some(123));
+    }
+
+    #[test]
+    fn test_opt_id_returns_some_for_zero() {
+        let result = opt_id(0);
+        assert_eq!(result, Some(0));
+    }
+
+    #[test]
+    fn test_opt_id_returns_some_for_large_id() {
+        let result = opt_id(1073741824);
+        assert_eq!(result, Some(1073741824));
     }
 }
