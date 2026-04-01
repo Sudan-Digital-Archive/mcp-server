@@ -49,7 +49,7 @@ pub struct SdaServer {
 /// Converts a default ID value (-1) to None for API requests.
 /// MCP clients pass -1 to indicate "not set", but the API expects null.
 #[allow(dead_code)]
-fn opt_id(id: i64) -> Option<i64> {
+pub(crate) fn opt_id(id: i64) -> Option<i64> {
     if id == -1 { None } else { Some(id) }
 }
 
