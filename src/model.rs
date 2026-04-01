@@ -393,32 +393,62 @@ pub struct AccessionsWithMetadataResponse {
     pub crawl_status: CrawlStatus,
     /// Timestamp when the crawl occurred.
     pub crawl_timestamp: String,
+    /// Unique crawl identifier (UUID).
+    pub crawl_id: Option<String>,
+    /// Organization identifier (UUID).
+    pub org_id: Option<String>,
+    /// Job run identifier.
+    pub job_run_id: Option<String>,
     /// The URL that was crawled.
     pub seed_url: String,
     /// Date associated with the Dublin Core metadata.
     pub dublin_metadata_date: String,
     /// Format of the metadata.
     pub dublin_metadata_format: DublinMetadataFormat,
-    /// Whether English metadata exists.
-    pub has_english_metadata: bool,
-    /// Whether Arabic metadata exists.
-    pub has_arabic_metadata: bool,
-    /// Arabic description.
-    pub description_ar: Option<String>,
+    /// English title.
+    pub title_en: Option<String>,
     /// English description.
     pub description_en: Option<String>,
-    /// List of subjects in Arabic.
-    pub subjects_ar: Option<Vec<String>>,
-    /// List of Arabic subject IDs.
-    pub subjects_ar_ids: Option<Vec<i32>>,
+    /// English location.
+    pub location_en: Option<String>,
+    /// Creator ID (English).
+    pub creator_en_id: Option<i32>,
+    /// Creator name (English).
+    pub creator_en: Option<String>,
     /// List of subjects in English.
     pub subjects_en: Option<Vec<String>>,
     /// List of English subject IDs.
     pub subjects_en_ids: Option<Vec<i32>>,
+    /// List of contributors (English).
+    pub contributors_en: Option<Vec<String>>,
+    /// List of contributor roles (English).
+    pub contributor_roles_en: Option<Vec<String>>,
+    /// Relations (English).
+    pub relations_en: Option<serde_json::Value>,
     /// Arabic title.
     pub title_ar: Option<String>,
-    /// English title.
-    pub title_en: Option<String>,
+    /// Arabic description.
+    pub description_ar: Option<String>,
+    /// Arabic location.
+    pub location_ar: Option<String>,
+    /// Creator ID (Arabic).
+    pub creator_ar_id: Option<i32>,
+    /// Creator name (Arabic).
+    pub creator_ar: Option<String>,
+    /// List of subjects in Arabic.
+    pub subjects_ar: Option<Vec<String>>,
+    /// List of Arabic subject IDs.
+    pub subjects_ar_ids: Option<Vec<i32>>,
+    /// List of contributors (Arabic).
+    pub contributors_ar: Option<Vec<String>>,
+    /// List of contributor roles (Arabic).
+    pub contributor_roles_ar: Option<Vec<String>>,
+    /// Relations (Arabic).
+    pub relations_ar: Option<serde_json::Value>,
+    /// Whether English metadata exists.
+    pub has_english_metadata: bool,
+    /// Whether Arabic metadata exists.
+    pub has_arabic_metadata: bool,
 }
 
 /// Response containing a list of accessions.
