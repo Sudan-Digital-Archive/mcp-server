@@ -106,7 +106,10 @@ impl SdaClient {
             }
         }
         if args.metadata_contributor_roles_inclusive_filter {
-            query.push(("metadata_contributor_roles_inclusive_filter", "true".to_string()));
+            query.push((
+                "metadata_contributor_roles_inclusive_filter",
+                "true".to_string(),
+            ));
         }
         if !args.query_term.is_empty() {
             query.push(("query_term", args.query_term));
