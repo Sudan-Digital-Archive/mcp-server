@@ -82,6 +82,35 @@ impl SdaClient {
         if args.metadata_subjects_inclusive_filter {
             query.push(("metadata_subjects_inclusive_filter", "true".to_string()));
         }
+        if !args.metadata_locations.is_empty() {
+            for s in args.metadata_locations {
+                query.push(("metadata_locations", s.to_string()));
+            }
+        }
+        if !args.metadata_creators.is_empty() {
+            for s in args.metadata_creators {
+                query.push(("metadata_creators", s.to_string()));
+            }
+        }
+        if !args.metadata_contributors.is_empty() {
+            for s in args.metadata_contributors {
+                query.push(("metadata_contributors", s.to_string()));
+            }
+        }
+        if args.metadata_contributors_inclusive_filter {
+            query.push(("metadata_contributors_inclusive_filter", "true".to_string()));
+        }
+        if !args.metadata_contributor_roles.is_empty() {
+            for s in args.metadata_contributor_roles {
+                query.push(("metadata_contributor_roles", s.to_string()));
+            }
+        }
+        if args.metadata_contributor_roles_inclusive_filter {
+            query.push((
+                "metadata_contributor_roles_inclusive_filter",
+                "true".to_string(),
+            ));
+        }
         if !args.query_term.is_empty() {
             query.push(("query_term", args.query_term));
         }
@@ -93,6 +122,9 @@ impl SdaClient {
         }
         if !args.date_to.is_empty() {
             query.push(("date_to", args.date_to));
+        }
+        if !args.location.is_empty() {
+            query.push(("location", args.location));
         }
         if args.is_private {
             query.push(("is_private", "true".to_string()));

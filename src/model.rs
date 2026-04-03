@@ -124,6 +124,24 @@ pub struct ListAccessionsArgs {
     /// Whether the subject filter should be inclusive.
     #[serde(default)]
     pub metadata_subjects_inclusive_filter: bool,
+    /// Filter by specific metadata location IDs.
+    #[serde(default)]
+    pub metadata_locations: Vec<i32>,
+    /// Filter by specific metadata creator IDs.
+    #[serde(default)]
+    pub metadata_creators: Vec<i32>,
+    /// Filter by specific metadata contributor IDs.
+    #[serde(default)]
+    pub metadata_contributors: Vec<i32>,
+    /// Whether the contributor filter should be inclusive.
+    #[serde(default)]
+    pub metadata_contributors_inclusive_filter: bool,
+    /// Filter by specific metadata contributor role IDs.
+    #[serde(default)]
+    pub metadata_contributor_roles: Vec<i32>,
+    /// Whether the contributor role filter should be inclusive.
+    #[serde(default)]
+    pub metadata_contributor_roles_inclusive_filter: bool,
     /// General query term to search for.
     #[serde(default)]
     pub query_term: String,
@@ -136,6 +154,9 @@ pub struct ListAccessionsArgs {
     /// End date filter.
     #[serde(default)]
     pub date_to: String,
+    /// Filter by location string.
+    #[serde(default)]
+    pub location: String,
     /// Whether to include private accessions.
     #[serde(default)]
     pub is_private: bool,
@@ -149,10 +170,17 @@ impl Default for ListAccessionsArgs {
             lang: MetadataLanguage::default(),
             metadata_subjects: Vec::new(),
             metadata_subjects_inclusive_filter: false,
+            metadata_locations: Vec::new(),
+            metadata_creators: Vec::new(),
+            metadata_contributors: Vec::new(),
+            metadata_contributors_inclusive_filter: false,
+            metadata_contributor_roles: Vec::new(),
+            metadata_contributor_roles_inclusive_filter: false,
             query_term: String::new(),
             url_filter: String::new(),
             date_from: String::new(),
             date_to: String::new(),
+            location: String::new(),
             is_private: false,
         }
     }
@@ -411,6 +439,8 @@ pub struct AccessionsWithMetadataResponse {
     pub description_en: Option<String>,
     /// English location.
     pub location_en: Option<String>,
+    /// English location ID.
+    pub location_en_id: Option<i32>,
     /// Creator ID (English).
     pub creator_en_id: Option<i32>,
     /// Creator name (English).
@@ -421,8 +451,12 @@ pub struct AccessionsWithMetadataResponse {
     pub subjects_en_ids: Option<Vec<i32>>,
     /// List of contributors (English).
     pub contributors_en: Option<Vec<String>>,
+    /// List of English contributor IDs.
+    pub contributor_en_ids: Option<Vec<i32>>,
     /// List of contributor roles (English).
     pub contributor_roles_en: Option<Vec<String>>,
+    /// List of English contributor role IDs.
+    pub contributor_role_en_ids: Option<Vec<i32>>,
     /// Relations (English).
     pub relations_en: Option<serde_json::Value>,
     /// Arabic title.
@@ -431,6 +465,8 @@ pub struct AccessionsWithMetadataResponse {
     pub description_ar: Option<String>,
     /// Arabic location.
     pub location_ar: Option<String>,
+    /// Arabic location ID.
+    pub location_ar_id: Option<i32>,
     /// Creator ID (Arabic).
     pub creator_ar_id: Option<i32>,
     /// Creator name (Arabic).
@@ -441,8 +477,12 @@ pub struct AccessionsWithMetadataResponse {
     pub subjects_ar_ids: Option<Vec<i32>>,
     /// List of contributors (Arabic).
     pub contributors_ar: Option<Vec<String>>,
+    /// List of Arabic contributor IDs.
+    pub contributor_ar_ids: Option<Vec<i32>>,
     /// List of contributor roles (Arabic).
     pub contributor_roles_ar: Option<Vec<String>>,
+    /// List of Arabic contributor role IDs.
+    pub contributor_role_ar_ids: Option<Vec<i32>>,
     /// Relations (Arabic).
     pub relations_ar: Option<serde_json::Value>,
     /// Whether English metadata exists.
