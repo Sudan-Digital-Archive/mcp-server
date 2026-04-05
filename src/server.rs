@@ -139,8 +139,14 @@ impl SdaServer {
     }
 
     /// Updates an existing accession.
+    ///
+    /// Important: The `metadata_language` field determines which language's metadata is being updated.
+    /// - When `metadata_language` is "english": use `metadata_title` for English title, `metadata_description` for English description
+    /// - When `metadata_language` is "arabic": use `metadata_title` for Arabic title (provide Arabic text), `metadata_description` for Arabic description
+    ///
+    /// The `metadata_title` and `metadata_description` fields will only update the language matching `metadata_language`.
     #[tool(
-        description = "Update an accession. Note: contributor_role_ids must be 1:1 with contributor_ids (same length)."
+        description = "Update an accession. Note: contributor_role_ids must be 1:1 with contributor_ids (same length). The metadata_language field determines which language's title and description are being updated - when set to english, provide English text in metadata_title/metadata_description; when set to arabic, provide Arabic text in those fields."
     )]
     async fn update_accession(
         &self,
@@ -176,8 +182,12 @@ impl SdaServer {
     }
 
     /// Creates a new accession by crawling a URL.
+    ///
+    /// Important: The `metadata_language` field determines which language's metadata is being created.
+    /// - When `metadata_language` is "english": provide English text in `metadata_title` and `metadata_description`
+    /// - When `metadata_language` is "arabic": provide Arabic text in `metadata_title` and `metadata_description`
     #[tool(
-        description = "Create a new accession (crawl). Note: metadata_time must be in ISO 8601 format without timezone (e.g., '2026-02-01T00:00:00', not '2026-02-01T00:00:00Z'). Contributor role IDs must be 1:1 with contributor IDs (same length)."
+        description = "Create a new accession (crawl). Note: metadata_time must be in ISO 8601 format without timezone (e.g., '2026-02-01T00:00:00', not '2026-02-01T00:00:00Z'). Contributor role IDs must be 1:1 with contributor IDs (same length). The metadata_language field determines which language's title and description are being created - when set to english, provide English text; when set to arabic, provide Arabic text."
     )]
     async fn create_accession_crawl(
         &self,
