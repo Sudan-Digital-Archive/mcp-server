@@ -140,13 +140,13 @@ impl SdaServer {
 
     /// Updates an existing accession.
     ///
-    /// Important: The `metadata_language` field determines which language's metadata is being updated.
-    /// - When `metadata_language` is "english": use `metadata_title` for English title, `metadata_description` for English description
-    /// - When `metadata_language` is "arabic": use `metadata_title` for Arabic title (provide Arabic text), `metadata_description` for Arabic description
+    /// **Important Language Convention:**
+    /// - When `metadata_language` is `"english"`: provide English text in `metadata_title` and `metadata_description`
+    /// - When `metadata_language` is `"arabic"`: provide Arabic text in `metadata_title` and `metadata_description`
     ///
-    /// The `metadata_title` and `metadata_description` fields will only update the language matching `metadata_language`.
+    /// The API uses `metadata_language` to determine which language's metadata you're updating.
     #[tool(
-        description = "Update an accession. Note: contributor_role_ids must be 1:1 with contributor_ids (same length). The metadata_language field determines which language's title and description are being updated - when set to english, provide English text in metadata_title/metadata_description; when set to arabic, provide Arabic text in those fields."
+        description = "Update an accession. Note: contributor_role_ids must be 1:1 with contributor_ids (same length). **Important:** The metadata_language field determines which language's title and description are being updated - when set to english, provide English text in metadata_title/metadata_description; when set to arabic, provide Arabic text in those fields."
     )]
     async fn update_accession(
         &self,
@@ -160,14 +160,10 @@ impl SdaServer {
             metadata_subjects: args.metadata_subjects,
             metadata_time: args.metadata_time,
             metadata_title: args.metadata_title,
-            metadata_contributor_ar_ids: args.metadata_contributor_ar_ids,
-            metadata_contributor_en_ids: args.metadata_contributor_en_ids,
-            metadata_contributor_role_ar_ids: args.metadata_contributor_role_ar_ids,
-            metadata_contributor_role_en_ids: args.metadata_contributor_role_en_ids,
-            metadata_creator_ar_id: opt_id(args.metadata_creator_ar_id),
-            metadata_creator_en_id: opt_id(args.metadata_creator_en_id),
-            metadata_location_ar_id: opt_id(args.metadata_location_ar_id),
-            metadata_location_en_id: opt_id(args.metadata_location_en_id),
+            metadata_contributor_ids: args.metadata_contributor_ids,
+            metadata_contributor_role_ids: args.metadata_contributor_role_ids,
+            metadata_creator_id: opt_id(args.metadata_creator_id),
+            metadata_location_id: opt_id(args.metadata_location_id),
         };
         let response = self
             .client
@@ -183,11 +179,11 @@ impl SdaServer {
 
     /// Creates a new accession by crawling a URL.
     ///
-    /// Important: The `metadata_language` field determines which language's metadata is being created.
-    /// - When `metadata_language` is "english": provide English text in `metadata_title` and `metadata_description`
-    /// - When `metadata_language` is "arabic": provide Arabic text in `metadata_title` and `metadata_description`
+    /// **Important Language Convention:**
+    /// - When `metadata_language` is `"english"`: provide English text in `metadata_title` and `metadata_description`
+    /// - When `metadata_language` is `"arabic"`: provide Arabic text in `metadata_title` and `metadata_description`
     #[tool(
-        description = "Create a new accession (crawl). Note: metadata_time must be in ISO 8601 format without timezone (e.g., '2026-02-01T00:00:00', not '2026-02-01T00:00:00Z'). Contributor role IDs must be 1:1 with contributor IDs (same length). The metadata_language field determines which language's title and description are being created - when set to english, provide English text; when set to arabic, provide Arabic text."
+        description = "Create a new accession (crawl). Note: metadata_time must be in ISO 8601 format without timezone (e.g., '2026-02-01T00:00:00', not '2026-02-01T00:00:00Z'). Contributor role IDs must be 1:1 with contributor IDs (same length). **Important:** The metadata_language field determines which language's title and description are being created - when set to english, provide English text; when set to arabic, provide Arabic text."
     )]
     async fn create_accession_crawl(
         &self,
@@ -205,14 +201,10 @@ impl SdaServer {
             browser_profile: args.browser_profile,
             metadata_description: args.metadata_description,
             s3_filename: args.s3_filename,
-            metadata_contributor_ar_ids: args.metadata_contributor_ar_ids,
-            metadata_contributor_en_ids: args.metadata_contributor_en_ids,
-            metadata_contributor_role_ar_ids: args.metadata_contributor_role_ar_ids,
-            metadata_contributor_role_en_ids: args.metadata_contributor_role_en_ids,
-            metadata_creator_ar_id: opt_id(args.metadata_creator_ar_id),
-            metadata_creator_en_id: opt_id(args.metadata_creator_en_id),
-            metadata_location_ar_id: opt_id(args.metadata_location_ar_id),
-            metadata_location_en_id: opt_id(args.metadata_location_en_id),
+            metadata_contributor_ids: args.metadata_contributor_ids,
+            metadata_contributor_role_ids: args.metadata_contributor_role_ids,
+            metadata_creator_id: opt_id(args.metadata_creator_id),
+            metadata_location_id: opt_id(args.metadata_location_id),
             send_email_notification: args.send_email_notification,
         };
         let response = self
@@ -226,7 +218,13 @@ impl SdaServer {
     }
 
     /// Lists metadata subjects available in the archive.
-    #[tool(description = "List subjects")]
+    ///
+    /// **Important:** Use the `lang` parameter to specify which language's subjects to retrieve:
+    /// - `lang: "english"` returns English subjects
+    /// - `lang: "arabic"` returns Arabic subjects
+    #[tool(
+        description = "List subjects. Use the lang parameter to specify 'english' or 'arabic' to get subjects in that language."
+    )]
     async fn list_subjects(
         &self,
         Parameters(args): Parameters<ListSubjectsArgs>,

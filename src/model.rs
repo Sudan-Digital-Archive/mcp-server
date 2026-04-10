@@ -55,9 +55,9 @@ fn default_id() -> i64 {
 pub struct CreateAccessionCrawlArgs {
     /// The URL to crawl.
     pub url: String,
-    /// Language of the metadata.
+    /// Language of the metadata. Use "english" for English text, "arabic" for Arabic text.
     pub metadata_language: MetadataLanguage,
-    /// Title of the accession.
+    /// Title of the accession. Provide English text if metadata_language is "english", Arabic text if "arabic".
     pub metadata_title: String,
     /// Time period related to the accession (ISO 8601, e.g. "2026-02-01T00:00:00" - do NOT include the "Z" suffix).
     pub metadata_time: String,
@@ -70,36 +70,24 @@ pub struct CreateAccessionCrawlArgs {
     /// Optional browser profile for specific sites.
     #[serde(default)]
     pub browser_profile: Option<BrowserProfile>,
-    /// Description of the accession.
+    /// Description of the accession. Provide English text if metadata_language is "english", Arabic text if "arabic".
     #[serde(default)]
     pub metadata_description: Option<String>,
     /// Optional S3 filename.
     #[serde(default)]
     pub s3_filename: Option<String>,
-    /// List of contributor IDs (Arabic).
+    /// List of contributor IDs.
     #[serde(default)]
-    pub metadata_contributor_ar_ids: Vec<i32>,
-    /// List of contributor IDs (English).
+    pub metadata_contributor_ids: Vec<i32>,
+    /// List of contributor role IDs - must be 1:1 with contributors (same length).
     #[serde(default)]
-    pub metadata_contributor_en_ids: Vec<i32>,
-    /// List of contributor role IDs (Arabic) - must be 1:1 with contributors.
-    #[serde(default)]
-    pub metadata_contributor_role_ar_ids: Vec<Option<i32>>,
-    /// List of contributor role IDs (English) - must be 1:1 with contributors.
-    #[serde(default)]
-    pub metadata_contributor_role_en_ids: Vec<Option<i32>>,
-    /// Creator ID (Arabic).
+    pub metadata_contributor_role_ids: Vec<Option<i32>>,
+    /// Creator ID.
     #[serde(default = "default_id")]
-    pub metadata_creator_ar_id: i64,
-    /// Creator ID (English).
+    pub metadata_creator_id: i64,
+    /// Location ID.
     #[serde(default = "default_id")]
-    pub metadata_creator_en_id: i64,
-    /// Location ID (Arabic).
-    #[serde(default = "default_id")]
-    pub metadata_location_ar_id: i64,
-    /// Location ID (English).
-    #[serde(default = "default_id")]
-    pub metadata_location_en_id: i64,
+    pub metadata_location_id: i64,
     /// Whether to send email notification after crawl completes.
     #[serde(default)]
     pub send_email_notification: bool,
@@ -217,41 +205,29 @@ pub struct UpdateAccessionArgs {
     pub id: i32,
     /// Privacy status.
     pub is_private: bool,
-    /// Description of the accession.
+    /// Description of the accession. Provide English text if metadata_language is "english", Arabic text if "arabic".
     #[serde(default)]
     pub metadata_description: String,
-    /// Language of the metadata.
+    /// Language of the metadata. Use "english" for English text, "arabic" for Arabic text.
     pub metadata_language: MetadataLanguage,
     /// List of subject IDs.
     pub metadata_subjects: Vec<i32>,
     /// Time period related to the accession.
     pub metadata_time: String,
-    /// Title of the accession.
+    /// Title of the accession. Provide English text if metadata_language is "english", Arabic text if "arabic".
     pub metadata_title: String,
-    /// List of contributor IDs (Arabic).
+    /// List of contributor IDs.
     #[serde(default)]
-    pub metadata_contributor_ar_ids: Vec<i32>,
-    /// List of contributor IDs (English).
+    pub metadata_contributor_ids: Vec<i32>,
+    /// List of contributor role IDs - must be 1:1 with contributors (same length).
     #[serde(default)]
-    pub metadata_contributor_en_ids: Vec<i32>,
-    /// List of contributor role IDs (Arabic) - must be 1:1 with contributors.
-    #[serde(default)]
-    pub metadata_contributor_role_ar_ids: Vec<Option<i32>>,
-    /// List of contributor role IDs (English) - must be 1:1 with contributors.
-    #[serde(default)]
-    pub metadata_contributor_role_en_ids: Vec<Option<i32>>,
-    /// Creator ID (Arabic).
+    pub metadata_contributor_role_ids: Vec<Option<i32>>,
+    /// Creator ID.
     #[serde(default = "default_id")]
-    pub metadata_creator_ar_id: i64,
-    /// Creator ID (English).
+    pub metadata_creator_id: i64,
+    /// Location ID.
     #[serde(default = "default_id")]
-    pub metadata_creator_en_id: i64,
-    /// Location ID (Arabic).
-    #[serde(default = "default_id")]
-    pub metadata_location_ar_id: i64,
-    /// Location ID (English).
-    #[serde(default = "default_id")]
-    pub metadata_location_en_id: i64,
+    pub metadata_location_id: i64,
 }
 
 /// Arguments for creating a metadata subject.
@@ -291,7 +267,7 @@ pub struct UpdateAccessionRequest {
     /// Description of the accession.
     #[serde(default)]
     pub metadata_description: String,
-    /// Language of the metadata.
+    /// Language of the metadata. Use "english" for English text, "arabic" for Arabic text.
     pub metadata_language: MetadataLanguage,
     /// List of subject IDs.
     pub metadata_subjects: Vec<i32>,
@@ -299,26 +275,16 @@ pub struct UpdateAccessionRequest {
     pub metadata_time: String,
     /// Title of the accession.
     pub metadata_title: String,
-    /// List of contributor IDs (Arabic).
+    /// List of contributor IDs.
     #[serde(default)]
-    pub metadata_contributor_ar_ids: Vec<i32>,
-    /// List of contributor IDs (English).
+    pub metadata_contributor_ids: Vec<i32>,
+    /// List of contributor role IDs - must be 1:1 with contributors (same length).
     #[serde(default)]
-    pub metadata_contributor_en_ids: Vec<i32>,
-    /// List of contributor role IDs (Arabic) - must be 1:1 with contributors.
-    #[serde(default)]
-    pub metadata_contributor_role_ar_ids: Vec<Option<i32>>,
-    /// List of contributor role IDs (English) - must be 1:1 with contributors.
-    #[serde(default)]
-    pub metadata_contributor_role_en_ids: Vec<Option<i32>>,
-    /// Creator ID (Arabic).
-    pub metadata_creator_ar_id: Option<i64>,
-    /// Creator ID (English).
-    pub metadata_creator_en_id: Option<i64>,
-    /// Location ID (Arabic).
-    pub metadata_location_ar_id: Option<i64>,
-    /// Location ID (English).
-    pub metadata_location_en_id: Option<i64>,
+    pub metadata_contributor_role_ids: Vec<Option<i32>>,
+    /// Creator ID.
+    pub metadata_creator_id: Option<i64>,
+    /// Location ID.
+    pub metadata_location_id: Option<i64>,
 }
 
 /// Request body for creating a metadata subject.
@@ -351,9 +317,9 @@ pub struct UpdateSubjectRequest {
 pub struct CreateAccessionCrawlRequest {
     /// The URL to crawl.
     pub url: String,
-    /// Language of the metadata.
+    /// Language of the metadata. Use "english" for English text, "arabic" for Arabic text.
     pub metadata_language: MetadataLanguage,
-    /// Title of the accession.
+    /// Title of the accession. Provide English text if metadata_language is "english", Arabic text if "arabic".
     pub metadata_title: String,
     /// Time period related to the accession (ISO 8601).
     pub metadata_time: String,
@@ -366,32 +332,22 @@ pub struct CreateAccessionCrawlRequest {
     /// Optional browser profile for specific sites.
     #[serde(default)]
     pub browser_profile: Option<BrowserProfile>,
-    /// Description of the accession.
+    /// Description of the accession. Provide English text if metadata_language is "english", Arabic text if "arabic".
     #[serde(default)]
     pub metadata_description: Option<String>,
     /// Optional S3 filename.
     #[serde(default)]
     pub s3_filename: Option<String>,
-    /// List of contributor IDs (Arabic).
+    /// List of contributor IDs.
     #[serde(default)]
-    pub metadata_contributor_ar_ids: Vec<i32>,
-    /// List of contributor IDs (English).
+    pub metadata_contributor_ids: Vec<i32>,
+    /// List of contributor role IDs - must be 1:1 with contributors (same length).
     #[serde(default)]
-    pub metadata_contributor_en_ids: Vec<i32>,
-    /// List of contributor role IDs (Arabic) - must be 1:1 with contributors.
-    #[serde(default)]
-    pub metadata_contributor_role_ar_ids: Vec<Option<i32>>,
-    /// List of contributor role IDs (English) - must be 1:1 with contributors.
-    #[serde(default)]
-    pub metadata_contributor_role_en_ids: Vec<Option<i32>>,
-    /// Creator ID (Arabic).
-    pub metadata_creator_ar_id: Option<i64>,
-    /// Creator ID (English).
-    pub metadata_creator_en_id: Option<i64>,
-    /// Location ID (Arabic).
-    pub metadata_location_ar_id: Option<i64>,
-    /// Location ID (English).
-    pub metadata_location_en_id: Option<i64>,
+    pub metadata_contributor_role_ids: Vec<Option<i32>>,
+    /// Creator ID.
+    pub metadata_creator_id: Option<i64>,
+    /// Location ID.
+    pub metadata_location_id: Option<i64>,
     /// Whether to send email notification after crawl completes.
     #[serde(default)]
     pub send_email_notification: bool,
