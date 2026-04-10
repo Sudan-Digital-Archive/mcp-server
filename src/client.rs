@@ -286,7 +286,7 @@ impl SdaClient {
         per_page: Option<i64>,
         in_collection_id: Option<i32>,
     ) -> Result<ListSubjectsResponse> {
-        let url = format!("{}/api/v1/metadata-subjects", self.base_url);
+        let url = format!("{}/api/v1/subjects", self.base_url);
         let mut query = vec![];
 
         // Add language parameter
@@ -328,7 +328,7 @@ impl SdaClient {
 
     /// Creates a new metadata subject.
     pub async fn create_subject(&self, request: CreateSubjectRequest) -> Result<String> {
-        let url = format!("{}/api/v1/metadata-subjects", self.base_url);
+        let url = format!("{}/api/v1/subjects", self.base_url);
         let response = self
             .client
             .post(&url)
@@ -349,7 +349,7 @@ impl SdaClient {
 
     /// Deletes a metadata subject by its ID.
     pub async fn delete_subject(&self, id: i32, request: DeleteSubjectRequest) -> Result<()> {
-        let url = format!("{}/api/v1/metadata-subjects/{}", self.base_url, id);
+        let url = format!("{}/api/v1/subjects/{}", self.base_url, id);
         let response = self
             .client
             .delete(&url)
@@ -369,7 +369,7 @@ impl SdaClient {
         id: i32,
         request: UpdateSubjectRequest,
     ) -> Result<DublinMetadataSubjectResponse> {
-        let url = format!("{}/api/v1/metadata-subjects/{}", self.base_url, id);
+        let url = format!("{}/api/v1/subjects/{}", self.base_url, id);
         let response = self
             .client
             .put(&url)
@@ -394,7 +394,7 @@ impl SdaClient {
         id: i32,
         lang: MetadataLanguage,
     ) -> Result<DublinMetadataSubjectResponse> {
-        let url = format!("{}/api/v1/metadata-subjects/{}", self.base_url, id);
+        let url = format!("{}/api/v1/subjects/{}", self.base_url, id);
         let mut query = vec![];
 
         match lang {
@@ -1390,10 +1390,10 @@ mod tests {
             "test-key".to_string(),
         );
         let id = 42;
-        let expected_url = "https://api.example.com/api/v1/metadata-subjects/42";
+        let expected_url = "https://api.example.com/api/v1/subjects/42";
 
         // Test URL construction by checking format string
-        let constructed_url = format!("{}/api/v1/metadata-subjects/{}", client.base_url, id);
+        let constructed_url = format!("{}/api/v1/subjects/{}", client.base_url, id);
         assert_eq!(constructed_url, expected_url);
     }
 
