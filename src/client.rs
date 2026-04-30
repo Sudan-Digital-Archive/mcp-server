@@ -157,6 +157,31 @@ impl SdaClient {
             .context("Failed to parse create accession crawl response text")
     }
 
+    /// Creates a new accession from a raw file upload.
+    pub async fn create_accession_raw(
+        &self,
+        request: CreateAccessionRawRequest,
+    ) -> Result<InitiateUploadResponse> {
+        let url = format!("{}/api/v1/accessions/raw", self.base_url);
+        let response = self
+            .client
+            .post(&url)
+            .header(self.auth_header().0, self.auth_header().1)
+            .json(&request)
+            .send()
+            .await
+            .context("Failed to send create accession raw request")?;
+
+        let response =
+            Self::handle_response(response, "Server returned error for create accession raw")
+                .await?;
+
+        response
+            .json()
+            .await
+            .context("Failed to parse create accession raw response")
+    }
+
     /// Fetches a list of public accessions.
     pub async fn list_accessions(
         &self,

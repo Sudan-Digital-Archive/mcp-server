@@ -5,16 +5,17 @@
 
 use crate::client::SdaClient;
 use crate::model::{
-    CreateAccessionCrawlArgs, CreateAccessionCrawlRequest, CreateCollectionArgs,
-    CreateCollectionRequest, CreateContributorArgs, CreateContributorRequest,
-    CreateContributorRoleArgs, CreateContributorRoleRequest, CreateCreatorArgs,
-    CreateCreatorRequest, CreateLocationArgs, CreateLocationRequest, CreateRelationArgs,
-    CreateRelationRequest, CreateSubjectArgs, CreateSubjectRequest, DeleteContributorArgs,
-    DeleteContributorRequest, DeleteContributorRoleArgs, DeleteContributorRoleRequest,
-    DeleteCreatorArgs, DeleteCreatorRequest, DeleteLocationArgs, DeleteLocationRequest,
-    DeleteRelationArgs, DeleteSubjectArgs, DeleteSubjectRequest, GetCollectionArgs,
-    GetContributorArgs, GetContributorRoleArgs, GetCreatorArgs, GetLocationArgs, GetRelationArgs,
-    GetSubjectArgs, IdArgs, ListAccessionsArgs, ListCollectionsArgs, ListContributorRolesArgs,
+    CreateAccessionCrawlArgs, CreateAccessionCrawlRequest, CreateAccessionRawArgs,
+    CreateAccessionRawRequest, CreateCollectionArgs, CreateCollectionRequest,
+    CreateContributorArgs, CreateContributorRequest, CreateContributorRoleArgs,
+    CreateContributorRoleRequest, CreateCreatorArgs, CreateCreatorRequest, CreateLocationArgs,
+    CreateLocationRequest, CreateRelationArgs, CreateRelationRequest, CreateSubjectArgs,
+    CreateSubjectRequest, DeleteContributorArgs, DeleteContributorRequest,
+    DeleteContributorRoleArgs, DeleteContributorRoleRequest, DeleteCreatorArgs,
+    DeleteCreatorRequest, DeleteLocationArgs, DeleteLocationRequest, DeleteRelationArgs,
+    DeleteSubjectArgs, DeleteSubjectRequest, GetCollectionArgs, GetContributorArgs,
+    GetContributorRoleArgs, GetCreatorArgs, GetLocationArgs, GetRelationArgs, GetSubjectArgs,
+    IdArgs, ListAccessionsArgs, ListCollectionsArgs, ListContributorRolesArgs,
     ListContributorsArgs, ListCreatorsArgs, ListLocationsArgs, ListPrivateCollectionsArgs,
     ListRelationsArgs, ListSubjectsArgs, UpdateAccessionArgs, UpdateAccessionRequest,
     UpdateCollectionArgs, UpdateCollectionRequest, UpdateContributorArgs, UpdateContributorRequest,
@@ -215,6 +216,48 @@ impl SdaServer {
             .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
 
         Ok(CallToolResult::success(vec![Content::text(response)]))
+    }
+
+    /// Creates a new accession from a raw file upload.
+    ///
+    /// **Important Language Convention:**
+    /// - When `metadata_language` is `"english"`: provide English text in `metadata_title` and `metadata_description`
+    /// - When `metadata_language` is `"arabic"`: provide Arabic text in `metadata_title` and `metadata_description`
+    ///
+    /// This endpoint returns a presigned URL where you must upload the file directly to S3.
+    #[tool(
+        description = "Create an accession from raw file upload. Returns a presigned URL where you must upload the file. Note: metadata_time must be in ISO 8601 format without timezone (e.g., '2026-02-01T00:00:00', not '2026-02-01T00:00:00Z'). Contributor role IDs must be 1:1 with contributor IDs (same length). **Important:** The metadata_language field determines which language's title and description are being created - when set to english, provide English text; when set to arabic, provide Arabic text."
+    )]
+    async fn create_accession_raw(
+        &self,
+        Parameters(args): Parameters<CreateAccessionRawArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let opt_id = |id: i64| if id == -1 { None } else { Some(id) };
+        let request = CreateAccessionRawRequest {
+            metadata_language: args.metadata_language,
+            metadata_title: args.metadata_title,
+            metadata_description: args.metadata_description,
+            metadata_time: args.metadata_time,
+            metadata_subjects: args.metadata_subjects,
+            is_private: args.is_private,
+            metadata_format: args.metadata_format,
+            original_url: args.original_url,
+            s3_filename: args.s3_filename,
+            metadata_contributor_ids: args.metadata_contributor_ids,
+            metadata_contributor_role_ids: args.metadata_contributor_role_ids,
+            metadata_creator_id: opt_id(args.metadata_creator_id),
+            metadata_location_id: opt_id(args.metadata_location_id),
+        };
+        let response = self
+            .client
+            .create_accession_raw(request)
+            .await
+            .context("Failed to create accession raw")
+            .map_err(|e| McpError::internal_error(format!("{:#}", e), None))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            serde_json::to_string_pretty(&response).unwrap(),
+        )]))
     }
 
     /// Lists metadata subjects available in the archive.
