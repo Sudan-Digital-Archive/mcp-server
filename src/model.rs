@@ -312,6 +312,82 @@ pub struct UpdateSubjectRequest {
     pub metadata_subject: String,
 }
 
+/// Arguments for creating an accession from raw file.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateAccessionRawArgs {
+    /// Language of the metadata. Use "english" for English text, "arabic" for Arabic text.
+    pub metadata_language: MetadataLanguage,
+    /// Title of the accession. Provide English text if metadata_language is "english", Arabic text if "arabic".
+    pub metadata_title: String,
+    /// Description of the accession. Provide English text if metadata_language is "english", Arabic text if "arabic".
+    #[serde(default)]
+    pub metadata_description: Option<String>,
+    /// Time period related to the accession (ISO 8601, e.g. "2026-02-01T00:00:00" - do NOT include the "Z" suffix).
+    pub metadata_time: String,
+    /// List of subject IDs.
+    pub metadata_subjects: Vec<i32>,
+    /// Whether the accession is private.
+    pub is_private: bool,
+    /// Format of the metadata.
+    pub metadata_format: DublinMetadataFormat,
+    /// Original URL of the archived content.
+    pub original_url: String,
+    /// S3 filename for the upload.
+    pub s3_filename: String,
+    /// List of contributor IDs.
+    #[serde(default)]
+    pub metadata_contributor_ids: Vec<i32>,
+    /// List of contributor role IDs - must be 1:1 with contributors (same length).
+    #[serde(default)]
+    pub metadata_contributor_role_ids: Vec<Option<i32>>,
+    /// Creator ID.
+    #[serde(default = "default_id")]
+    pub metadata_creator_id: i64,
+    /// Location ID.
+    #[serde(default = "default_id")]
+    pub metadata_location_id: i64,
+}
+
+/// Request body for creating an accession from raw file.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct CreateAccessionRawRequest {
+    /// Language of the metadata.
+    pub metadata_language: MetadataLanguage,
+    /// Title of the accession.
+    pub metadata_title: String,
+    /// Description of the accession.
+    pub metadata_description: Option<String>,
+    /// Time period related to the accession.
+    pub metadata_time: String,
+    /// List of subject IDs.
+    pub metadata_subjects: Vec<i32>,
+    /// Whether the accession is private.
+    pub is_private: bool,
+    /// Format of the metadata.
+    pub metadata_format: DublinMetadataFormat,
+    /// Original URL of the archived content.
+    pub original_url: String,
+    /// S3 filename for the upload.
+    pub s3_filename: String,
+    /// List of contributor IDs.
+    pub metadata_contributor_ids: Vec<i32>,
+    /// List of contributor role IDs.
+    pub metadata_contributor_role_ids: Vec<Option<i32>>,
+    /// Creator ID.
+    pub metadata_creator_id: Option<i64>,
+    /// Location ID.
+    pub metadata_location_id: Option<i64>,
+}
+
+/// Response from initiating a raw file upload.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct InitiateUploadResponse {
+    /// The ID of the created accession.
+    pub accession_id: i32,
+    /// Presigned URL to upload the file to S3.
+    pub upload_url: String,
+}
+
 /// Request body for creating a new accession crawl.
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct CreateAccessionCrawlRequest {
