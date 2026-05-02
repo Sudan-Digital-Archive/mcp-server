@@ -76,9 +76,6 @@ pub struct CreateAccessionCrawlArgs {
     /// Description of the accession. Provide English text if metadata_language is "english", Arabic text if "arabic".
     #[serde(default)]
     pub metadata_description: Option<String>,
-    /// Optional S3 filename.
-    #[serde(default)]
-    pub s3_filename: Option<String>,
     /// List of contributor IDs.
     #[serde(default)]
     pub metadata_contributor_ids: Vec<i32>,
@@ -370,8 +367,6 @@ pub struct CreateAccessionRawRequest {
     pub metadata_format: DublinMetadataFormat,
     /// Original URL of the archived content.
     pub original_url: String,
-    /// S3 filename for the upload.
-    pub s3_filename: String,
     /// List of contributor IDs.
     pub metadata_contributor_ids: Vec<i32>,
     /// List of contributor role IDs.
@@ -414,9 +409,6 @@ pub struct CreateAccessionCrawlRequest {
     /// Description of the accession. Provide English text if metadata_language is "english", Arabic text if "arabic".
     #[serde(default)]
     pub metadata_description: Option<String>,
-    /// Optional S3 filename.
-    #[serde(default)]
-    pub s3_filename: Option<String>,
     /// List of contributor IDs.
     #[serde(default)]
     pub metadata_contributor_ids: Vec<i32>,
