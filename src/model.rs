@@ -25,6 +25,9 @@ pub enum DublinMetadataFormat {
     /// Web ARChive (Zipped) format.
     #[serde(rename = "wacz")]
     Wacz,
+    /// MP4 video format.
+    #[serde(rename = "mp4")]
+    Mp4,
 }
 
 /// Supported browser profiles for hard to archive sites.
