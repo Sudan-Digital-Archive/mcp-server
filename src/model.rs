@@ -536,8 +536,8 @@ pub struct ListAccessionsResponse {
 pub struct GetOneAccessionResponse {
     /// The accession details.
     pub accession: AccessionsWithMetadataResponse,
-    /// URL to download the WACZ file.
-    pub wacz_url: String,
+    /// URL to download from S3.
+    pub s3_url: String,
 }
 
 /// Represents a single metadata subject.

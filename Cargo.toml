@@ -1,7 +1,8 @@
 [package]
 name = "sda-mcp-server"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2024"
+license = "BSD-3-Clause"
 
 [dependencies]
 clap = { version = "4.5.54", features = ["derive", "env"] }
