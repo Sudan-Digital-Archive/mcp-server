@@ -1253,7 +1253,7 @@ impl SdaClient {
         );
         let mut query = vec![];
 
-match lang {
+        match lang {
             MetadataLanguage::English => query.push(("lang", "english".to_string())),
             MetadataLanguage::Arabic => query.push(("lang", "arabic".to_string())),
             MetadataLanguage::None => query.push(("lang", "english".to_string())),
