@@ -1113,9 +1113,3 @@ pub struct RelationResponse {
     pub related_accession_id: i32,
     pub relation_type: String,
 }
-
-/// Response containing a list of relations.
-#[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct ListRelationsResponse {
-    pub items: Vec<RelationResponse>,
-}
