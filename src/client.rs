@@ -1246,7 +1246,7 @@ impl SdaClient {
         &self,
         accession_id: i32,
         lang: MetadataLanguage,
-    ) -> Result<ListRelationsResponse> {
+    ) -> Result<Vec<RelationResponse>> {
         let url = format!(
             "{}/api/v1/accessions/{}/relation",
             self.base_url, accession_id
