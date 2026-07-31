@@ -28,6 +28,9 @@ pub enum DublinMetadataFormat {
     /// MP4 video format.
     #[serde(rename = "mp4")]
     Mp4,
+    /// PDF document format.
+    #[serde(rename = "pdf")]
+    Pdf,
 }
 
 /// Supported browser profiles for hard to archive sites.
