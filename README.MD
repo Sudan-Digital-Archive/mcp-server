@@ -44,7 +44,7 @@ irm https://raw.githubusercontent.com/Sudan-Digital-Archive/mcp-server/main/inst
 
 You can configure the server using command-line arguments or environment variables.
 
-- `--api-key` or `API_KEY`: Your SDA API key.
+- `--api-key` or `SDA_API_KEY`: Your SDA API key.
 - `--base-url`: (Optional) The base URL for the SDA API.
 
 ### Integration Example (Gemini/Claude)
@@ -60,7 +60,7 @@ To use this server with an MCP client, add it to your configuration. Here is an 
         "--api-key", "YOUR_API_KEY_HERE"
       ],
       "env": {
-        "API_KEY": "YOUR_API_KEY_HERE"
+        "SDA_API_KEY": "YOUR_API_KEY_HERE"
       }
     }
   }

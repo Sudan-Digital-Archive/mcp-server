@@ -11,6 +11,8 @@ echo "Detecting system..."
 if [ "$OS" = "Linux" ]; then
     if [ "$ARCH" = "x86_64" ]; then
         ASSET_SUFFIX="linux-x86_64"
+    elif [ "$ARCH" = "aarch64" ]; then
+        ASSET_SUFFIX="linux-arm64"
     else
         echo "Error: Unsupported architecture for Linux: $ARCH"
         exit 1
